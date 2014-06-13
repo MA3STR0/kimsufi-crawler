@@ -16,6 +16,7 @@ with open('config.json', 'r') as configfile:
     config=json.loads(configfile.read())
 
 URL = "https://ws.ovh.com/dedicated/r2/ws.dispatcher/getAvailability2"
+
 SERVER_TYPES = {
     '142sk1': 'KS-1',
     '142sk7': 'KS-2',
@@ -24,6 +25,7 @@ SERVER_TYPES = {
     '142sk5': 'KS-5',
     '142sk6': 'KS-6',
 }
+
 DATACENTERS = {
     'bhs': 'Beauharnois, Canada (Americas)',
     'gra': 'Gravelines, France',
@@ -31,10 +33,11 @@ DATACENTERS = {
     'sbg': 'Strasbourg, France (Central Europe)',
     'par': 'Paris, France',
 }
+
 STATES = {}
 
 
-def send_mail(title, text, url=False, email="anton.c@live.com"):
+def send_mail(title, text, url=False):
     msg = MIMEMultipart()
     fromaddr = config['from_email']
     frompwd = config['from_pwd']
