@@ -1,3 +1,6 @@
+"""Crawler that sends notifications as soon as servers
+on Kimsufi/OVH become available for purchase"""
+
 import tornado.ioloop
 import tornado.web
 import json
@@ -13,7 +16,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 _logger = logging.getLogger(__name__)
 
 with open('config.json', 'r') as configfile:
-    config=json.loads(configfile.read())
+    config = json.loads(configfile.read())
 
 URL = "https://ws.ovh.com/dedicated/r2/ws.dispatcher/getAvailability2"
 
@@ -39,6 +42,7 @@ STATES = {}
 
 
 def send_mail(title, text, url=False):
+    """Send email notification using SMTP"""
     msg = MIMEMultipart()
     fromaddr = config['from_email']
     frompwd = config['from_pwd']
@@ -59,9 +63,9 @@ def send_mail(title, text, url=False):
 
 
 def send_osx_notification(title, text, url=False):
-    """Send notification to the user"""
+    """Send Mac-OS-X notification using terminal-notifier"""
     subprocess.call(['terminal-notifier',
-                     '-title', title ,
+                     '-title', title,
                      '-message', text,
                      '-open', url
                      ])
@@ -83,26 +87,31 @@ def update_state(state, value, message=False):
 def run_crawler():
     """Run a crawler iteration"""
     http_client = AsyncHTTPClient()
+    # request OVH availablility API asynchronously
     response = yield http_client.fetch(URL)
     response_json = json.loads(response.body.decode('utf-8'))
     availability = response_json['answer']['availability']
     for item in availability:
+        # look for servers of required types in OVH availability list
         if SERVER_TYPES.get(item['reference']) in config['servers']:
-            zones = [e['zone'] for e in item['zones']
+            # make a flat list of zones where servers are available
+            available_zones = [e['zone'] for e in item['zones']
                      if e['availability'] != 'unavailable']
-            if [z for z in config['zones'] if z in zones]:
+            # iterate over all tacked zones and set availability states
+            for zone in config['zones']:
                 server = SERVER_TYPES[item['reference']]
-                text = "Server %s is available for in %s" % (server,
-                            ', '.join([DATACENTERS[zone] for zone in zones]))
-                message = {
-                    'title': "Server %s available" % server,
-                    'text': text,
-                    'url': "http://www.kimsufi.com/fr/index.xml"
-                }
-                state_id = '%s_available_in_%s' % (server, '+'.join(zones))
-                update_state(state_id, True, message)
-            else:
-                update_state(state_id, False)
+                state_id = '%s_available_in_%s' % (server, zone)
+                # make an alert for each available tracked zone
+                if zone in available_zones:
+                    text = "Server %s is available in %s" % (server, zone)
+                    message = {
+                        'title': "Server %s available" % server,
+                        'text': text,
+                        'url': "http://www.kimsufi.com/fr/index.xml"
+                    }
+                    update_state(state_id, True, message)
+                else:
+                    update_state(state_id, False)
 
 
 if __name__ == "__main__":
