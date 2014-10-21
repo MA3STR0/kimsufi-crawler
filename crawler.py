@@ -45,7 +45,8 @@ def send_mail(title, text, url=False):
     """Send email notification using SMTP"""
     msg = MIMEMultipart()
     fromaddr = config['from_email']
-    fromuser = config['from_user']
+    # smtp user may be different from email
+    fromuser = config.get('from_user', fromaddr)
     frompwd = config['from_pwd']
     toaddr = config['to_email']
     msg = MIMEMultipart()
