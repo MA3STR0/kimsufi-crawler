@@ -1,5 +1,6 @@
 {
     "from_email": "sender@domain.com",
+    "from_user": "sender@domain.com",
     "from_pwd": "sender-password",
     "from_smtp_host": "smtp.gmail.com",
     "from_smtp_port": 587,
