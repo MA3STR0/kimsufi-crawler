@@ -45,6 +45,7 @@ def send_mail(title, text, url=False):
     """Send email notification using SMTP"""
     msg = MIMEMultipart()
     fromaddr = config['from_email']
+    fromuser = config['from_user']
     frompwd = config['from_pwd']
     toaddr = config['to_email']
     msg = MIMEMultipart()
@@ -57,7 +58,7 @@ def send_mail(title, text, url=False):
     server.ehlo()
     server.starttls()
     server.ehlo()
-    server.login(fromaddr, frompwd)
+    server.login(fromuser, frompwd)
     text = msg.as_string()
     server.sendmail(fromaddr, toaddr, text)
 
