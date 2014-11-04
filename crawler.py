@@ -92,6 +92,8 @@ def run_crawler():
     # request OVH availablility API asynchronously
     response = yield http_client.fetch(URL)
     response_json = json.loads(response.body.decode('utf-8'))
+    if not response_json or not response_json['answer']:
+        return
     availability = response_json['answer']['availability']
     for item in availability:
         # look for servers of required types in OVH availability list
@@ -103,17 +105,14 @@ def run_crawler():
             for zone in config['zones']:
                 server = SERVER_TYPES[item['reference']]
                 state_id = '%s_available_in_%s' % (server, zone)
-                # make an alert for each available tracked zone
-                if zone in available_zones:
-                    text = "Server %s is available in %s" % (server, zone)
-                    message = {
-                        'title': "Server %s available" % server,
-                        'text': text,
-                        'url': "http://www.kimsufi.com/fr/index.xml"
-                    }
-                    update_state(state_id, True, message)
-                else:
-                    update_state(state_id, False)
+                # update state for each tracked zone
+                text = "Server %s is available in %s" % (server, zone)
+                message = {
+                    'title': "Server %s available" % server,
+                    'text': text,
+                    'url': "http://www.kimsufi.com/fr/index.xml"
+                }
+                update_state(state_id, zone in available_zones, message)
 
 
 if __name__ == "__main__":
