@@ -5,6 +5,7 @@ import tornado.ioloop
 import tornado.web
 import json
 import subprocess
+import sys
 from tornado.httpclient import AsyncHTTPClient
 from tornado.gen import coroutine
 import logging
@@ -39,6 +40,25 @@ DATACENTERS = {
 }
 
 STATES = {}
+
+
+def check_smtp_server():
+    """Try login to SMTP server to check config"""
+    fromaddr = config['from_email']
+    fromuser = config.get('from_user', fromaddr)
+    frompwd = config['from_pwd']
+    server = smtplib.SMTP(config['from_smtp_host'], config['from_smtp_port'])
+    server.ehlo()
+    server.starttls()
+    server.ehlo()
+    try:
+        server.login(fromuser, frompwd)
+    except Exception as ex:
+        _logger.error("Cannot connect to your SMTP accout. "
+                      "Correct your config and try again. Error details:")
+        _logger.error(ex)
+        sys.exit(1)
+    _logger.info("SMTP server check passed")
 
 
 def send_mail(title, text, url=False):
@@ -100,7 +120,7 @@ def run_crawler():
         if SERVER_TYPES.get(item['reference']) in config['servers']:
             # make a flat list of zones where servers are available
             available_zones = [e['zone'] for e in item['zones']
-                     if e['availability'] != 'unavailable']
+                               if e['availability'] != 'unavailable']
             # iterate over all tacked zones and set availability states
             for zone in config['zones']:
                 server = SERVER_TYPES[item['reference']]
@@ -116,6 +136,12 @@ def run_crawler():
 
 
 if __name__ == "__main__":
+    check_smtp_server()
     loop = tornado.ioloop.IOLoop.instance()
     tornado.ioloop.PeriodicCallback(run_crawler, 30000).start()
-    loop.start()
+    _logger.info("Starting IO loop")
+    try:
+        loop.start()
+    except KeyboardInterrupt:
+        _logger.info("Terminated by user. Bye.")
+        sys.exit(0)
