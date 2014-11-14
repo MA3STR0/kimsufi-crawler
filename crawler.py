@@ -1,17 +1,14 @@
 """Crawler that sends notifications as soon as servers
 on Kimsufi/OVH become available for purchase"""
 
+import json
+import sys
+import logging
+import importlib
 import tornado.ioloop
 import tornado.web
-import json
-import subprocess
-import sys
 from tornado.httpclient import AsyncHTTPClient
 from tornado.gen import coroutine
-import logging
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-import smtplib
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 _logger = logging.getLogger(__name__)
@@ -20,6 +17,10 @@ with open('config.json', 'r') as configfile:
     config = json.loads(configfile.read())
 
 URL = "https://ws.ovh.com/dedicated/r2/ws.dispatcher/getAvailability2"
+
+NOTIFIERS = {
+    'email': 'notifiers.email_notifier.EmailNotifier',
+}
 
 SERVER_TYPES = {
     '142sk1': 'KS-1',
@@ -42,57 +43,6 @@ DATACENTERS = {
 STATES = {}
 
 
-def check_smtp_server():
-    """Try login to SMTP server to check config"""
-    fromaddr = config['from_email']
-    fromuser = config.get('from_user', fromaddr)
-    frompwd = config['from_pwd']
-    server = smtplib.SMTP(config['from_smtp_host'], config['from_smtp_port'])
-    server.ehlo()
-    server.starttls()
-    server.ehlo()
-    try:
-        server.login(fromuser, frompwd)
-    except Exception as ex:
-        _logger.error("Cannot connect to your SMTP accout. "
-                      "Correct your config and try again. Error details:")
-        _logger.error(ex)
-        sys.exit(1)
-    _logger.info("SMTP server check passed")
-
-
-def send_mail(title, text, url=False):
-    """Send email notification using SMTP"""
-    msg = MIMEMultipart()
-    fromaddr = config['from_email']
-    # smtp user may be different from email
-    fromuser = config.get('from_user', fromaddr)
-    frompwd = config['from_pwd']
-    toaddr = config['to_email']
-    msg = MIMEMultipart()
-    msg['From'] = fromaddr
-    msg['To'] = toaddr
-    msg['Subject'] = title
-    body = text + '\nURL: ' + url
-    msg.attach(MIMEText(body, 'plain'))
-    server = smtplib.SMTP(config['from_smtp_host'], config['from_smtp_port'])
-    server.ehlo()
-    server.starttls()
-    server.ehlo()
-    server.login(fromuser, frompwd)
-    text = msg.as_string()
-    server.sendmail(fromaddr, toaddr, text)
-
-
-def send_osx_notification(title, text, url=False):
-    """Send Mac-OS-X notification using terminal-notifier"""
-    subprocess.call(['terminal-notifier',
-                     '-title', title,
-                     '-message', text,
-                     '-open', url
-                     ])
-
-
 def update_state(state, value, message=False):
     """Update state of particular event"""
     # if new value is True and last saved was False
@@ -101,7 +51,7 @@ def update_state(state, value, message=False):
     if value is not STATES[state]:
         _logger.info("State change - %s:%s", state, value)
     if value and not STATES[state]:
-        send_mail(**message)
+        notifier.notify(**message)
     STATES[state] = value
 
 
@@ -136,10 +86,24 @@ def run_crawler():
 
 
 if __name__ == "__main__":
-    check_smtp_server()
+    # Select notifier, 'email' by default
+    if 'notifier' not in config:
+        _logger.warning("No notifier selected in config, 'email' will be used")
+        config['notifier'] = 'email'
+    # Instantiate notifier class dynamically
+    try:
+        n_path = NOTIFIERS[config['notifier']]
+        n_file, n_classname = n_path.rsplit('.', 1)
+        n_module = importlib.import_module(n_file)
+        notifier = getattr(n_module, n_classname)(config)
+    except:
+        _logger.error("Notifier loading failed, check configuration for errors")
+        sys.exit(1)
+
     loop = tornado.ioloop.IOLoop.instance()
     tornado.ioloop.PeriodicCallback(run_crawler, 30000).start()
     _logger.info("Starting IO loop")
+
     try:
         loop.start()
     except KeyboardInterrupt:
