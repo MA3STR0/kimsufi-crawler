@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Crawler that sends notifications as soon as servers
 on Kimsufi/OVH become available for purchase"""
 
