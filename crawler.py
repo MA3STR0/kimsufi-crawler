@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Crawler that sends notifications as soon as servers
 on Kimsufi/OVH become available for purchase"""
 
@@ -20,6 +22,8 @@ URL = "https://ws.ovh.com/dedicated/r2/ws.dispatcher/getAvailability2"
 
 NOTIFIERS = {
     'email': 'notifiers.email_notifier.EmailNotifier',
+    'osx': 'notifiers.osx_notifier.OSXNotifier',
+    'popup': 'notifiers.popup_notifier.PopupNotifier'
 }
 
 SERVER_TYPES = {
@@ -49,7 +53,7 @@ def update_state(state, value, message=False):
     if state not in STATES:
         STATES[state] = False
     if value is not STATES[state]:
-        _logger.info("State change - %s:%s", state, value)
+        _logger.info("State change - %s: %s", state, value)
     if value and not STATES[state]:
         notifier.notify(**message)
     STATES[state] = value
@@ -97,7 +101,7 @@ if __name__ == "__main__":
         n_module = importlib.import_module(n_file)
         notifier = getattr(n_module, n_classname)(config)
     except:
-        _logger.error("Notifier loading failed, check configuration for errors")
+        _logger.exception("Notifier loading failed, check configuration for errors")
         sys.exit(1)
 
     loop = tornado.ioloop.IOLoop.instance()
