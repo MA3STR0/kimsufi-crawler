@@ -9,7 +9,7 @@ Kimsufi Avaliability Crawler
     cd kimsufi-crawler
     cp config.json.example config.json
     vim config.json   # edit config.json file to set up your nofitication preferences
-    sudo pip install tornado>=4.0.0
+    sudo pip install "tornado>=4.0.0"
     python crawler.py
 
 About
@@ -32,6 +32,6 @@ _Following steps have been tested on Mac and Linux_
     - `rbx` is Roubaix, France (best for Western Europe),
     - `sbg` is Strasbourg, France (best for Central Europe)
 
-- Crawler runs on Python 2.7-3.4 and tornado framework (tested on 4.0.2), assuming that you already have Python/pip, just get tornado with `sudo pip install tornado>=4.0.0`. You can also set up virtual-env if you like.
+- Crawler runs on Python 2.7-3.4 and tornado framework (tested on 4.0.2), assuming that you already have Python/pip, just get tornado with `sudo pip install "tornado>=4.0.0"`. You can also set up virtual-env if you like.
 - Run with `python crawler.py`
 - Get and enjoy awesome Kimsufi servers!
