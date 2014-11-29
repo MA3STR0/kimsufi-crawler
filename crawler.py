@@ -16,7 +16,12 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 _logger = logging.getLogger(__name__)
 
 with open('config.json', 'r') as configfile:
-    config = json.loads(configfile.read())
+    try:
+        config = json.loads(configfile.read())
+    except ValueError:
+        _logger.error("Parsing JSON settings in config.json has failed. "
+                      "Use a validator (i.e. jsonlint.com) to check syntax.")
+        sys.exit(1)
 
 URL = "https://ws.ovh.com/dedicated/r2/ws.dispatcher/getAvailability2"
 
