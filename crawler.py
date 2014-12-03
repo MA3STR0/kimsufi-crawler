@@ -15,14 +15,6 @@ from tornado.gen import coroutine
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 _logger = logging.getLogger(__name__)
 
-with open('config.json', 'r') as configfile:
-    try:
-        config = json.loads(configfile.read())
-    except ValueError:
-        _logger.error("Parsing JSON settings in config.json has failed. "
-                      "Use a validator (i.e. jsonlint.com) to check syntax.")
-        sys.exit(1)
-
 URL = "https://ws.ovh.com/dedicated/r2/ws.dispatcher/getAvailability2"
 
 NOTIFIERS = {
@@ -95,6 +87,16 @@ def run_crawler():
 
 
 if __name__ == "__main__":
+    CONFIG_NAME = sys.argv[1] if len(sys.argv) == 2 else 'config.json'
+    with open(CONFIG_NAME, 'r') as configfile:
+        try:
+            config = json.loads(configfile.read())
+        except ValueError:
+            _logger.error("Parsing JSON settings in config.json has failed. "
+                          "Check syntax with a validator (i.e. jsonlint.com)")
+            sys.exit(1)
+
+
     # Select notifier, 'email' by default
     if 'notifier' not in config:
         _logger.warning("No notifier selected in config, 'email' will be used")
@@ -106,7 +108,8 @@ if __name__ == "__main__":
         n_module = importlib.import_module(n_file)
         notifier = getattr(n_module, n_classname)(config)
     except:
-        _logger.exception("Notifier loading failed, check configuration for errors")
+        _logger.exception("Notifier loading failed,"
+                          "check configuration for errors")
         sys.exit(1)
 
     loop = tornado.ioloop.IOLoop.instance()
