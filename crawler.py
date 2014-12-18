@@ -20,7 +20,9 @@ URL = "https://ws.ovh.com/dedicated/r2/ws.dispatcher/getAvailability2"
 NOTIFIERS = {
     'email': 'notifiers.email_notifier.EmailNotifier',
     'osx': 'notifiers.osx_notifier.OSXNotifier',
-    'popup': 'notifiers.popup_notifier.PopupNotifier'
+    'popup': 'notifiers.popup_notifier.PopupNotifier',
+    'smsapi': 'notifiers.smsapi_notifier.SmsApiNotifier',
+
 }
 
 SERVER_TYPES = {
@@ -113,7 +115,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     loop = tornado.ioloop.IOLoop.instance()
-    tornado.ioloop.PeriodicCallback(run_crawler, 30000).start()
+    tornado.ioloop.PeriodicCallback(run_crawler, 15000).start()
     _logger.info("Starting IO loop")
 
     try:
