@@ -10,6 +10,7 @@ import importlib
 import tornado.ioloop
 import tornado.web
 from tornado.httpclient import AsyncHTTPClient
+from tornado.httpclient import HTTPError
 from tornado.gen import coroutine
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
@@ -62,7 +63,11 @@ def run_crawler():
     """Run a crawler iteration"""
     http_client = AsyncHTTPClient()
     # request OVH availablility API asynchronously
-    response = yield http_client.fetch(URL)
+    try:
+        response = yield http_client.fetch(URL)
+    except HTTPError as e:
+        _logger.info("HTTP Error: {0}".format(e))
+        return
     response_json = json.loads(response.body.decode('utf-8'))
     if not response_json or not response_json['answer']:
         return
