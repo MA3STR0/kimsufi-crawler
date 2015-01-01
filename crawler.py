@@ -25,13 +25,17 @@ NOTIFIERS = {
 }
 
 SERVER_TYPES = {
-    '142sk1': 'KS-1',
-    '142sk7': 'KS-2',
-    '142sk3': 'KS-3',
-    '142sk4': 'KS-4',
-    '142sk5': 'KS-5A',
-    '142sk8': 'KS-5B',
-    '142sk6': 'KS-6',
+    '150sk10': 'KS-1',
+    '150sk20': 'KS-2a',
+    '150sk21': 'KS-2b',
+    '150sk22': 'KS-2c',
+    '150sk30': 'KS-3',
+    '150sk31': 'KS-3',
+    '150sk40': 'KS-4',
+    '150sk41': 'KS-4',
+    '150sk42': 'KS-4',
+    '150sk50': 'KS-5',
+    '150sk60': 'KS-6',
 }
 
 DATACENTERS = {
@@ -72,7 +76,8 @@ def run_crawler():
         if SERVER_TYPES.get(item['reference']) in config['servers']:
             # make a flat list of zones where servers are available
             available_zones = [e['zone'] for e in item['zones']
-                               if e['availability'] != 'unavailable']
+                               if e['availability'] not in ['unavailable',
+                                                            'unknown']]
             # iterate over all tacked zones and set availability states
             for zone in config['zones']:
                 server = SERVER_TYPES[item['reference']]
