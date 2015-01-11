@@ -2,6 +2,7 @@
     "servers": ["KS-3"],
     "zones": ["rbx", "sbg"],
     "notifier": "email",
+    "use_starttls": true,
     "from_email": "sender@domain.com",
     "from_user": "sender@domain.com",
     "from_pwd": "sender-password",
