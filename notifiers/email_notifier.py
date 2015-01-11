@@ -21,6 +21,7 @@ class EmailNotifier(Notifier):
         self.host = config['from_smtp_host']
         self.port = config['from_smtp_port']
         self.toaddr = config['to_email']
+        self.login_required = config['from_user'] and config['from_pwd']
         super(EmailNotifier, self).__init__(config)
 
     def check_requirements(self):
@@ -30,7 +31,8 @@ class EmailNotifier(Notifier):
         server.starttls()
         server.ehlo()
         try:
-            server.login(self.fromuser, self.frompwd)
+            if self.login_required:
+                server.login(self.fromuser, self.frompwd)
         except Exception as ex:
             _logger.error("Cannot connect to your SMTP account. "
                           "Correct your config and try again. Error details:")
@@ -50,6 +52,7 @@ class EmailNotifier(Notifier):
         server.ehlo()
         server.starttls()
         server.ehlo()
-        server.login(self.fromuser, self.frompwd)
+        if self.login_required:
+          server.login(self.fromuser, self.frompwd)
         text = msg.as_string()
         server.sendmail(self.fromaddr, self.toaddr, text)
