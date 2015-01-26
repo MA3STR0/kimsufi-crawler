@@ -37,6 +37,10 @@ SERVER_TYPES = {
     '150sk42': 'KS-4',
     '150sk50': 'KS-5',
     '150sk60': 'KS-6',
+    '141game1': 'GAME-1',
+    '141game2': 'GAME-2',
+    '141game3': 'GAME-3',
+
 }
 
 DATACENTERS = {
