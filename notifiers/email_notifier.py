@@ -17,12 +17,12 @@ class EmailNotifier(Notifier):
         self.use_starttls = config.get('use_starttls', True)
         self.fromaddr = config['from_email']
         # smtp user may be different from email
-        self.fromuser = config.get('from_user', self.fromaddr)
-        self.frompwd = config['from_pwd']
+        self.fromuser = config.get('from_user', self.fromaddr).encode('utf-8')
+        self.frompwd = config['from_pwd'].encode('utf-8')
         self.host = config['from_smtp_host']
         self.port = config['from_smtp_port']
         self.toaddr = config['to_email']
-        self.login_required = config['from_user'] and config['from_pwd']
+        self.login_required = self.fromuser and config['from_pwd']
         super(EmailNotifier, self).__init__(config)
 
     def check_requirements(self):
