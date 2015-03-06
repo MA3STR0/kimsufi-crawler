@@ -83,6 +83,14 @@ def run_crawler():
     if not response_json or not response_json['answer']:
         return
     availability = response_json['answer']['availability']
+    # for debug only: catch duplicates in json availability
+    servers_in_availability = [e['reference'] for e in availability]
+    checked = set()
+    duplicates = [x for x in servers_in_availability
+                  if x in checked and not checked.add(x)]
+    if duplicates:
+        _logger.info('Servers %s have duplicate availability', duplicates)
+        _logger.info('Duplicate entries may result in false positives')
     for item in availability:
         # get server type of availability item
         server_type = SERVER_TYPES.get(item['reference'])
