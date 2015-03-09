@@ -114,7 +114,7 @@ def run_crawler():
         server_type = SERVER_TYPES.get(item['reference'])
         # return if this server type is not tracked
         if server_type not in CONFIG['servers']:
-            return
+            continue
         # make a flat list of zones where servers of this type are available
         available_zones = [
             e['zone'] for e in item['zones']
