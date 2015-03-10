@@ -26,6 +26,7 @@ NOTIFIERS = {
 }
 
 SERVER_TYPES = {
+    # kimsufi servers
     '150sk10': 'KS-1',
     '150sk20': 'KS-2a',
     '150sk21': 'KS-2b',
@@ -37,11 +38,11 @@ SERVER_TYPES = {
     '150sk42': 'KS-4',
     '150sk50': 'KS-5',
     '150sk60': 'KS-6',
+
+    # soyoustart servers
     '141game1': 'GAME-1',
     '141game2': 'GAME-2',
     '141game3': 'GAME-3',
-
-    # soyoustart servers
     '142sys4': 'SYS-IP-1',
     '143sys4': 'E3-SAT-1',
     '143sys13': 'E3-SSD-1',
@@ -49,7 +50,6 @@ SERVER_TYPES = {
     '143sys1': 'E3-SAT-2',
     '143sys11': 'E3-SSD-2',
     '143sys2': 'E3-SAT-3',
-    '143sys11': 'E3-SSD-3',
     '142sys8': 'SYS-IP-4',
     '143sys3': 'E3-SAT-4',
     '143sys12': 'E3-SSD-4',
