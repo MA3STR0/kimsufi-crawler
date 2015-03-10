@@ -70,6 +70,7 @@ DATACENTERS = {
 }
 
 STATES = {}
+HTTP_ERRORS = []
 
 
 def update_state(state, value, message=False):
@@ -95,8 +96,13 @@ def run_crawler():
     try:
         response = yield http_client.fetch(URL)
     except HTTPError as ex:
-        _logger.error("HTTP Error: {0}".format(ex))
+        # Internal Server Error
+        HTTP_ERRORS.append(ex)
+        if len(HTTP_ERRORS) > 3:
+            _logger.error("Too many HTTP Errors: %s", HTTP_ERRORS)
         return
+    if HTTP_ERRORS:
+        del HTTP_ERRORS[:]
     response_json = json.loads(response.body.decode('utf-8'))
     if not response_json or not response_json['answer']:
         return
