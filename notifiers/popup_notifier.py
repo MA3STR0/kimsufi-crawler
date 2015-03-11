@@ -1,4 +1,4 @@
-"""Notifier that sends Mac OSX desktop notifications"""
+"""Notifier that opens a popup window"""
 
 import logging
 import webbrowser
