@@ -20,7 +20,7 @@ class EmailNotifier(Notifier):
         self.fromuser = config.get('from_user', self.fromaddr).encode('utf-8')
         self.frompwd = config['from_pwd'].encode('utf-8')
         self.host = config['from_smtp_host']
-        self.port = config['from_smtp_port']
+        self.port = config.get('from_smtp_port', 587)
         self.toaddr = config['to_email']
         self.login_required = self.fromuser and config['from_pwd']
         super(EmailNotifier, self).__init__(config)
