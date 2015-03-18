@@ -153,6 +153,11 @@ if __name__ == "__main__":
     if 'notifier' not in CONFIG:
         _logger.warning("No notifier selected in config, 'email' will be used")
         CONFIG['notifier'] = 'email'
+    # Check and set periodic callback time
+    CALLBACK_TIME = CONFIG.get('crawler_interval', 10)
+    if CALLBACK_TIME < 7.2:
+        _logger.warning("Selected crawler interval of %s seconds is less than "
+                        "7.2, client may be rate-limited by OVH", CALLBACK_TIME)
     # Instantiate notifier class dynamically
     try:
         NOTIFIER_PATH = NOTIFIERS[CONFIG['notifier']]
@@ -165,7 +170,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     LOOP = tornado.ioloop.IOLoop.instance()
-    tornado.ioloop.PeriodicCallback(run_crawler, 15000).start()
+    tornado.ioloop.PeriodicCallback(run_crawler, CALLBACK_TIME*1000).start()
     _logger.info("Starting IO loop")
 
     try:
