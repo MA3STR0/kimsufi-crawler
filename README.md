@@ -43,6 +43,7 @@ _Following steps have been tested on Mac and Linux_
 
 - Crawler runs on Python 2.7+ and Tornado framework 4.0+. Assuming that you already have Python/pip, just get Tornado with `sudo pip install "tornado>=4.0.0"`. You can also set up virtualenv if you like.
 - Run with `python crawler.py`
+- It's a good idea to register an account on Kimsufi/OVH in advance; just pick any available server on www.kimsufi.com and sign up without paying. This way later you will only need to log in and enter payment details, which saves a lot of time.
 - Get and enjoy awesome cheap servers!
 
 
