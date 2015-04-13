@@ -54,5 +54,6 @@ You can add more options to the config.json if you need:
 
 - `"crawler_interval": 8`    // overriding default periodic callback timeout in seconds (10 by default, should be more than 7.2)
 - `"use_starttls": true` // forcing encrypted SMTP session using TLS (true by default)
+- `"use_ssl": false` // forcing encrypted SMTP session using SSL (false by default)
 - `"from_user": "sender@domain.com"`  // if smtp user is different from `from_email`
 - `"from_smtp_port": 587` // if you have non-standard (587) smtp port
