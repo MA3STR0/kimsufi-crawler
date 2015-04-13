@@ -15,6 +15,7 @@ class EmailNotifier(Notifier):
     def __init__(self, config):
         """Override init to make SMTP-settings check"""
         self.use_starttls = config.get('use_starttls', True)
+        self.use_ssl = config.get('use_ssl', False)
         self.fromaddr = config['from_email']
         # smtp user may be different from email
         self.fromuser = config.get('from_user', self.fromaddr).encode('utf-8')
@@ -27,7 +28,10 @@ class EmailNotifier(Notifier):
 
     def check_requirements(self):
         """Logs in to SMTP server to check credentials and settings"""
-        server = smtplib.SMTP(self.host, self.port)
+        if self.use_ssl:
+            server = smtplib.SMTP_SSL(self.host, self.port)
+        else:
+            server = smtplib.SMTP(self.host, self.port)
         server.ehlo()
         if self.use_starttls:
             server.starttls()
@@ -50,7 +54,10 @@ class EmailNotifier(Notifier):
         msg['Subject'] = title
         body = text + '\nURL: ' + url
         msg.attach(MIMEText(body, 'plain'))
-        server = smtplib.SMTP(self.host, self.port)
+        if self.use_ssl:
+            server = smtplib.SMTP_SSL(self.host, self.port)
+        else:
+            server = smtplib.SMTP(self.host, self.port)
         server.ehlo()
         if self.use_starttls:
             server.starttls()
