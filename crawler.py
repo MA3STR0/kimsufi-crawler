@@ -27,38 +27,38 @@ NOTIFIERS = {
 
 SERVER_TYPES = {
     # kimsufi servers
-    '150sk10': 'KS-1',
-    '150sk20': 'KS-2a',
-    '150sk21': 'KS-2b',
-    '150sk22': 'KS-2c',
-    '150sk30': 'KS-3',
-    '150sk31': 'KS-3',
-    '150sk40': 'KS-4',
-    '150sk41': 'KS-4',
-    '150sk42': 'KS-4',
-    '150sk50': 'KS-5',
-    '150sk60': 'KS-6',
+    '150sk10': ['KS-1'],
+    '150sk20': ['KS-2', 'KS-2a'],
+    '150sk21': ['KS-2', 'KS-2b'],
+    '150sk22': ['KS-2_SSD', 'KS-2c'],
+    '150sk30': ['KS-3'],
+    '150sk31': ['KS-3'],
+    '150sk40': ['KS-4'],
+    '150sk41': ['KS-4'],
+    '150sk42': ['KS-4'],
+    '150sk50': ['KS-5'],
+    '150sk60': ['KS-6'],
 
     # soyoustart servers
-    '141game1': 'GAME-1',
-    '141game2': 'GAME-2',
-    '141game3': 'GAME-3',
-    '142sys4': 'SYS-IP-1',
-    '143sys4': 'E3-SAT-1',
-    '143sys13': 'E3-SSD-1',
-    '142sys5': 'SYS-IP-2',
-    '143sys1': 'E3-SAT-2',
-    '143sys11': 'E3-SSD-2',
-    '143sys2': 'E3-SAT-3',
-    '142sys8': 'SYS-IP-4',
-    '143sys3': 'E3-SAT-4',
-    '143sys12': 'E3-SSD-4',
-    '141bk1': 'BK-8T',
-    '142sys6': 'SYS-IP-5',
-    '142sys10': 'SYS-IP-5S',
-    '141bk2': 'BK-24T',
-    '142sys7': 'SYS-IP-6',
-    '142sys9': 'SYS-IP-6S',
+    '141game1': ['GAME-1'],
+    '141game2': ['GAME-2'],
+    '141game3': ['GAME-3'],
+    '142sys4':  ['SYS-IP-1'],
+    '143sys4':  ['E3-SAT-1'],
+    '143sys13': ['E3-SSD-1'],
+    '142sys5':  ['SYS-IP-2'],
+    '143sys1':  ['E3-SAT-2'],
+    '143sys11': ['E3-SSD-2'],
+    '143sys2':  ['E3-SAT-3'],
+    '142sys8':  ['SYS-IP-4'],
+    '143sys3':  ['E3-SAT-4'],
+    '143sys12': ['E3-SSD-4'],
+    '141bk1':   ['BK-8T'],
+    '142sys6':  ['SYS-IP-5'],
+    '142sys10': ['SYS-IP-5S'],
+    '141bk2':   ['BK-24T'],
+    '142sys7':  ['SYS-IP-6'],
+    '142sys9':  ['SYS-IP-6S'],
 }
 
 DATACENTERS = {
@@ -116,11 +116,15 @@ def run_crawler():
         _logger.info('Servers %s have duplicate availability', duplicates)
         _logger.info('Duplicate entries may result in false positives')
     for item in availability:
-        # get server type of availability item
-        server_type = SERVER_TYPES.get(item['reference'])
-        # return if this server type is not tracked
-        if server_type not in CONFIG['servers']:
+        # find server type names of availability item, or continue loop
+        server_names = SERVER_TYPES.get(item['reference'])
+        if not server_names:
             continue
+        # if this server type is not tracked - continue loop
+        server_type_match = set(server_names).intersection(CONFIG['servers'])
+        if not server_type_match:
+            continue
+        server_type = server_type_match.pop()
         # make a flat list of zones where servers of this type are available
         available_zones = [
             e['zone'] for e in item['zones']
