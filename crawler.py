@@ -121,7 +121,7 @@ def run_crawler():
         if not server_names:
             continue
         # if this server type is not tracked - continue loop
-        server_type_match = set(server_names).intersection(CONFIG['servers'])
+        server_type_match = CONFIG['servers'].intersection(server_names)
         if not server_type_match:
             continue
         server_type = server_type_match.pop()
@@ -153,6 +153,11 @@ if __name__ == "__main__":
                           "Check syntax with a validator (i.e. jsonlint.com)")
             sys.exit(1)
 
+    # Cast CONFIG['servers'] to set
+    if isinstance(CONFIG['servers'], list):
+        CONFIG['servers'] = set(CONFIG['servers'])
+    else:
+        _logger.warning("Error in config: CONFIG['servers'] is not a list")
     # Select notifier, 'email' by default
     if 'notifier' not in CONFIG:
         _logger.warning("No notifier selected in config, 'email' will be used")
