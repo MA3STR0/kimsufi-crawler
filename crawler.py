@@ -25,42 +25,6 @@ NOTIFIERS = {
     'smsapi': 'notifiers.smsapi_notifier.SmsApiNotifier',
 }
 
-SERVER_TYPES = {
-    # kimsufi servers
-    '150sk10': ['KS-1'],
-    '150sk20': ['KS-2', 'KS-2a'],
-    '150sk21': ['KS-2', 'KS-2b'],
-    '150sk22': ['KS-2 SSD', 'KS-2c'],
-    '150sk30': ['KS-3'],
-    '150sk31': ['KS-3'],
-    '150sk40': ['KS-4'],
-    '150sk41': ['KS-4'],
-    '150sk42': ['KS-4'],
-    '150sk50': ['KS-5'],
-    '150sk60': ['KS-6'],
-
-    # soyoustart servers
-    '141game1': ['GAME-1'],
-    '141game2': ['GAME-2'],
-    '141game3': ['GAME-3'],
-    '142sys4':  ['SYS-IP-1'],
-    '143sys4':  ['E3-SAT-1'],
-    '143sys13': ['E3-SSD-1'],
-    '142sys5':  ['SYS-IP-2'],
-    '143sys1':  ['E3-SAT-2'],
-    '143sys11': ['E3-SSD-2'],
-    '143sys2':  ['E3-SAT-3'],
-    '142sys8':  ['SYS-IP-4'],
-    '143sys3':  ['E3-SAT-4'],
-    '143sys12': ['E3-SSD-4'],
-    '141bk1':   ['BK-8T'],
-    '142sys6':  ['SYS-IP-5'],
-    '142sys10': ['SYS-IP-5S'],
-    '141bk2':   ['BK-24T'],
-    '142sys7':  ['SYS-IP-6'],
-    '142sys9':  ['SYS-IP-6S'],
-}
-
 DATACENTERS = {
     'bhs': 'Beauharnois, Canada (Americas)',
     'gra': 'Gravelines, France',
@@ -145,12 +109,21 @@ def run_crawler():
 
 
 if __name__ == "__main__":
+    # load user config
     CONFIG_NAME = sys.argv[1] if len(sys.argv) == 2 else 'config.json'
     with open(CONFIG_NAME, 'r') as configfile:
         try:
             CONFIG = json.loads(configfile.read())
         except ValueError:
             _logger.error("Parsing JSON settings in config.json has failed. "
+                          "Check syntax with a validator (i.e. jsonlint.com)")
+            sys.exit(1)
+    # load server type mapping
+    with open('server_types.json', 'r') as configfile:
+        try:
+            SERVER_TYPES = json.loads(configfile.read())
+        except ValueError:
+            _logger.error("Parsing JSON in server_types.json has failed. "
                           "Check syntax with a validator (i.e. jsonlint.com)")
             sys.exit(1)
 
