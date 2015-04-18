@@ -108,32 +108,35 @@ def run_crawler():
             update_state(state_id, server_available, message)
 
 
+def parse_json_file(filename):
+    """open file and parse its content as json"""
+    with open(filename, 'r') as jsonfile:
+        content = jsonfile.read()
+        try:
+            result = json.loads(content)
+        except ValueError:
+            _logger.error(
+                "Parsing file %s failed. Check syntax with a JSON validator",
+                filename)
+            sys.exit(1)
+    return result
+
+
 if __name__ == "__main__":
     # load user config
     CONFIG_NAME = sys.argv[1] if len(sys.argv) == 2 else 'config.json'
-    with open(CONFIG_NAME, 'r') as configfile:
-        try:
-            CONFIG = json.loads(configfile.read())
-        except ValueError:
-            _logger.error("Parsing JSON settings in config.json has failed. "
-                          "Check syntax with a validator (i.e. jsonlint.com)")
-            sys.exit(1)
-    # load server type mapping
-    with open('server_types.json', 'r') as configfile:
-        try:
-            SERVER_TYPES = json.loads(configfile.read())
-        except ValueError:
-            _logger.error("Parsing JSON in server_types.json has failed. "
-                          "Check syntax with a validator (i.e. jsonlint.com)")
-            sys.exit(1)
 
+    CONFIG = parse_json_file(CONFIG_NAME)
     # Cast CONFIG['servers'] to set
     if isinstance(CONFIG['servers'], list):
         CONFIG['servers'] = set(CONFIG['servers'])
     else:
         _logger.warning("Error in config: CONFIG['servers'] is not a list")
+    # load server type mapping
+    SERVER_TYPES = parse_json_file('server_types.json')
     # Select notifier, 'email' by default
     if 'notifier' not in CONFIG:
+
         _logger.warning("No notifier selected in config, 'email' will be used")
         CONFIG['notifier'] = 'email'
     # Check and set periodic callback time
