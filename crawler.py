@@ -30,7 +30,7 @@ SERVER_TYPES = {
     '150sk10': ['KS-1'],
     '150sk20': ['KS-2', 'KS-2a'],
     '150sk21': ['KS-2', 'KS-2b'],
-    '150sk22': ['KS-2_SSD', 'KS-2c'],
+    '150sk22': ['KS-2 SSD', 'KS-2c'],
     '150sk30': ['KS-3'],
     '150sk31': ['KS-3'],
     '150sk40': ['KS-4'],
@@ -133,7 +133,8 @@ def run_crawler():
         # iterate over all tracked zones and update availability state
         for zone in CONFIG['zones']:
             server_available = zone in available_zones
-            state_id = '%s_available_in_%s' % (server_type, zone)
+            state_id = '{name}_available_in_{zone}'.format(
+                name=server_type, zone=zone).replace(' ', '_')
             message = {
                 'title': "Server {0} available".format(server_type),
                 'text': "Server {server_type} is available in {zone}".format(
