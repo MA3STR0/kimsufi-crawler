@@ -12,6 +12,7 @@ import tornado.web
 from tornado.httpclient import AsyncHTTPClient
 from tornado.httpclient import HTTPError
 from tornado.gen import coroutine
+from urllib import quote
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 _logger = logging.getLogger(__name__)
@@ -116,8 +117,8 @@ def parse_json_file(filename):
             result = json.loads(content)
         except ValueError:
             _logger.error(
-                "Parsing file %s failed. Check syntax with a JSON validator",
-                filename)
+                "Parsing file %s failed. Check syntax with a JSON validator:"
+                "\nhttp://jsonlint.com/?json=%s", filename, quote(content))
             sys.exit(1)
     return result
 
