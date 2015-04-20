@@ -24,7 +24,7 @@ _Following steps have been tested on Mac and Linux_
 
 - Clone this repo (`git clone kimsufi-crawler`) or download and unpack archive
 - Taking `config.json.example` as a template, create a file `config.json` and correct configuration according to your preferences:
-  - `servers`: list of servers that should be tracked, eg `["KS-1", "SYS-IP-1", "GAME-2"]` etc
+  - `servers`: list of servers that should be tracked, eg `["KS-1", "KS-2 SSD", "GAME-2"]` etc. All supported server names can be found in mapping file [server_types.json](/blob/master/server_types.json) in hash values)
 
   - `zones`: list of datacenter locations that interest you, eg `["rbx", "bhs"]`
     - `bhs` is Beauharnois, Canada (best for Americas),
