@@ -69,8 +69,19 @@ DATACENTERS = {
     'par': 'Paris, France',
 }
 
+LOCATIONS = {
+    'canada': ['bhs'],
+    'europe': ['gra', 'rbx', 'sbg', 'par']
+}
+
 STATES = {}
 HTTP_ERRORS = []
+
+
+def notify_subscribers(state, message=False):
+    """Trigger notifications for subscribers of event"""
+    if state in TRACKED_STATES:
+        NOTIFIER.notify(**message)
 
 
 def update_state(state, value, message=False):
@@ -83,7 +94,7 @@ def update_state(state, value, message=False):
         _logger.info("State change - %s: %s", state, value)
     # notify, if state changed from False to True
     if value and not STATES[state]:
-        NOTIFIER.notify(**message)
+        notify_subscribers(state, message)
     # save the new value
     STATES[state] = value
 
@@ -119,22 +130,25 @@ def run_crawler():
         # get server type of availability item
         server_type = SERVER_TYPES.get(item['reference'])
         # return if this server type is not tracked
-        if server_type not in CONFIG['servers']:
-            continue
+        # if server_type not in CONFIG['servers']:
+            # continue
         # make a flat list of zones where servers of this type are available
-        available_zones = [
+        available_zones = set([
             e['zone'] for e in item['zones']
-            if e['availability'] not in ['unavailable', 'unknown']]
+            if e['availability'] not in ['unavailable', 'unknown']])
         _logger.debug('%s is available in %s', server_type, available_zones)
-        # iterate over all tracked zones and update availability state
-        for zone in CONFIG['zones']:
-            server_available = zone in available_zones
-            state_id = '%s_available_in_%s' % (server_type, zone)
+        # iterate over all tracked zones and update availability states
+        # for zone in CONFIG['zones']:
+            # server_available = zone in available_zones
+        # iterate over all locations and update availability states
+        for location, location_zones in LOCATIONS.items():
+            server_available = available_zones.intersection(location_zones)
+            state_id = '%s_available_in_%s' % (server_type, location)
             message = {
-                'title': "Server {0} available".format(server_type),
-                'text': "Server {server_type} is available in {zone}".format(
-                    server_type=server_type, zone=zone),
-                'url': "http://www.kimsufi.com/fr/index.xml"
+                'title': "{0} is available".format(server_type),
+                'text': "Server {server} is available in {loc}".format(
+                    server=server_type, loc=location),
+                'url': "http://www.kimsufi.com/en/index.xml"
             }
             update_state(state_id, server_available, message)
 
@@ -153,6 +167,14 @@ if __name__ == "__main__":
     if 'notifier' not in CONFIG:
         _logger.warning("No notifier selected in config, 'email' will be used")
         CONFIG['notifier'] = 'email'
+
+    # prepare states tracked by the user
+    TRACKED_STATES = []
+    for server_type in CONFIG['servers']:
+        for location in CONFIG['LOCATIONS']:
+            TRACKED_STATED.append(
+                '%s_available_in_%s' % (server_type, location)
+
     # Check and set periodic callback time
     CALLBACK_TIME = CONFIG.get('crawler_interval', 10)
     if CALLBACK_TIME < 7.2:
