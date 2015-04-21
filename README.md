@@ -5,7 +5,7 @@ Kimsufi/So-you-Start Avaliability Crawler
 
 **TL;DR**
 
-    git clone kimsufi-crawler
+    git clone https://github.com/MA3STR0/kimsufi-crawler.git
     cd kimsufi-crawler
     cp config.json.example config.json
     vim config.json   # edit config.json file to set up your nofitication preferences
@@ -22,7 +22,7 @@ Set it up
 
 _Following steps have been tested on Mac and Linux_
 
-- Clone this repo (`git clone kimsufi-crawler`) or download and unpack archive
+- Clone this repo (`git clone https://github.com/MA3STR0/kimsufi-crawler.git`) or download and unpack archive
 - Taking `config.json.example` as a template, create a file `config.json` and correct configuration according to your preferences:
   - `servers`: list of servers that should be tracked, eg `["KS-1", "SYS-IP-1", "GAME-2"]` etc
 
