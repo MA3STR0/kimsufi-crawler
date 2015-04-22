@@ -19,6 +19,9 @@ _logger = logging.getLogger(__name__)
 
 URL = "https://ws.ovh.com/dedicated/r2/ws.dispatcher/getAvailability2"
 
+STATES = {}
+HTTP_ERRORS = []
+TRACKED_STATES = []
 NOTIFIERS = {
     'email': 'notifiers.email_notifier.EmailNotifier',
     'osx': 'notifiers.osx_notifier.OSXNotifier',
@@ -26,16 +29,11 @@ NOTIFIERS = {
     'smsapi': 'notifiers.smsapi_notifier.SmsApiNotifier',
 }
 
-DATACENTERS = {
-    'bhs': 'Beauharnois, Canada (Americas)',
-    'gra': 'Gravelines, France',
-    'rbx': 'Roubaix, France (Western Europe)',
-    'sbg': 'Strasbourg, France (Central Europe)',
-    'par': 'Paris, France',
-}
 
-STATES = {}
-HTTP_ERRORS = []
+def notify_subscribers(state, message=False):
+    """Trigger notifications for subscribers of event"""
+    if state in TRACKED_STATES:
+        NOTIFIER.notify(**message)
 
 
 def update_state(state, value, message=False):
@@ -48,7 +46,7 @@ def update_state(state, value, message=False):
         _logger.info("State change - %s: %s", state, value)
     # notify, if state changed from False to True
     if value and not STATES[state]:
-        NOTIFIER.notify(**message)
+        notify_subscribers(state, message)
     # save the new value
     STATES[state] = value
 
@@ -72,39 +70,26 @@ def run_crawler():
     if not response_json or not response_json['answer']:
         return
     availability = response_json['answer']['availability']
-    # for debug only: catch duplicates in json availability
-    servers_in_availability = [e['reference'] for e in availability]
-    checked = set()
-    duplicates = [x for x in servers_in_availability
-                  if x in checked and not checked.add(x)]
-    if duplicates:
-        _logger.info('Servers %s have duplicate availability', duplicates)
-        _logger.info('Duplicate entries may result in false positives')
     for item in availability:
-        # find server type names of availability item, or continue loop
-        server_names = SERVER_TYPES.get(item['reference'])
-        if not server_names:
+        # get server type of availability item
+        server_type = SERVER_TYPES.get(item['reference'])
+        # return if this server type is not tracked
+        if server_type not in CONFIG['servers']:
             continue
-        # if this server type is not tracked - continue loop
-        server_type_match = CONFIG['servers'].intersection(server_names)
-        if not server_type_match:
-            continue
-        server_type = server_type_match.pop()
         # make a flat list of zones where servers of this type are available
-        available_zones = [
+        available_zones = set([
             e['zone'] for e in item['zones']
-            if e['availability'] not in ['unavailable', 'unknown']]
+            if e['availability'] not in ['unavailable', 'unknown']])
         _logger.debug('%s is available in %s', server_type, available_zones)
-        # iterate over all tracked zones and update availability state
-        for zone in CONFIG['zones']:
-            server_available = zone in available_zones
-            state_id = '{name}_available_in_{zone}'.format(
-                name=server_type, zone=zone).replace(' ', '_')
+        # iterate over all locations and update availability states
+        for location, datacenters in REGIONS.items():
+            server_available = bool(available_zones.intersection(datacenters))
+            state_id = '%s_available_in_%s' % (server_type, location)
             message = {
-                'title': "Server {0} available".format(server_type),
-                'text': "Server {server_type} is available in {zone}".format(
-                    server_type=server_type, zone=zone),
-                'url': "http://www.kimsufi.com/fr/index.xml"
+                'title': "{0} is available".format(server_type),
+                'text': "Server {server} is available in {loc}".format(
+                    server=server_type, loc=location),
+                'url': "http://www.kimsufi.com/en/index.xml"
             }
             update_state(state_id, server_available, message)
 
@@ -125,21 +110,20 @@ def parse_json_file(filename):
 
 if __name__ == "__main__":
     # load user config
-    CONFIG_NAME = sys.argv[1] if len(sys.argv) == 2 else 'config.json'
-
-    CONFIG = parse_json_file(CONFIG_NAME)
-    # Cast CONFIG['servers'] to set
-    if isinstance(CONFIG['servers'], list):
-        CONFIG['servers'] = set(CONFIG['servers'])
-    else:
-        _logger.warning("Error in config: CONFIG['servers'] is not a list")
-    # load server type mapping
-    SERVER_TYPES = parse_json_file('server_types.json')
+    CONFIG = parse_json_file('config.json')
+    # load mappings
+    SERVER_TYPES = parse_json_file('mapping/server_types.json')
+    REGIONS = parse_json_file('mapping/regions.json')
     # Select notifier, 'email' by default
     if 'notifier' not in CONFIG:
-
         _logger.warning("No notifier selected in config, 'email' will be used")
         CONFIG['notifier'] = 'email'
+
+    # prepare states tracked by the user
+    for track_server_type in CONFIG['servers']:
+        TRACKED_STATES.append(
+            '%s_available_in_%s' % (track_server_type, CONFIG['region']))
+
     # Check and set periodic callback time
     CALLBACK_TIME = CONFIG.get('crawler_interval', 10)
     if CALLBACK_TIME < 7.2:
@@ -152,8 +136,7 @@ if __name__ == "__main__":
         NOTIFIER_MODULE = importlib.import_module(NOTIFIER_FILE)
         NOTIFIER = getattr(NOTIFIER_MODULE, NOTIFIER_CLASSNAME)(CONFIG)
     except Exception as ex:
-        _logger.exception("Notifier loading failed,"
-                          "check configuration for errors")
+        _logger.exception("Notifier loading failed, check config for errors")
         sys.exit(1)
 
     LOOP = tornado.ioloop.IOLoop.instance()

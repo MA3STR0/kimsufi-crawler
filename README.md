@@ -26,20 +26,17 @@ _Following steps have been tested on Mac and Linux_
 - Taking `config.json.example` as a template, create a file `config.json` and correct configuration according to your preferences:
   - `servers`: list of servers that should be tracked, eg `["KS-1", "KS-2 SSD", "GAME-2"]` etc. All supported server names can be found in mapping file [server_types.json](/blob/master/server_types.json) in hash values)
 
-  - `zones`: list of datacenter locations that interest you, eg `["rbx", "bhs"]`
-    - `bhs` is Beauharnois, Canada (best for Americas),
-    - `rbx` is Roubaix, France (best for Western Europe),
-    - `sbg` is Strasbourg, France (best for Central Europe)
+  - `region`: desired location of server, `canada` or `europe`
 
   - `notifier`: notification mechanism, choose between:
     - `"email"`: default, requires additional email account settings
     - `"popup"`: simple popup window, platform-independent
-    - `"osx"`: Mavericks-like notifications
+    - `"osx"`: Mac OS-X desktop notifications (using terminal-notifier)
     - `"smsapi"`: sms through smsapi.pl gateway, requires account
 
   - `to_email`: your email to receive notifications
   - `from_email`: email account of the crawler.
-  - `from_pwd`, `from_smtp_host`, `from_smtp_port`: smtp configuration of crawler email account
+  - `from_pwd`, `from_smtp_host`: smtp configuration of crawler email account
 
 - Crawler runs on Python 2.7+ and Tornado framework 4.0+. Assuming that you already have Python/pip, just get Tornado with `sudo pip install "tornado>=4.0.0"`. You can also set up virtualenv if you like.
 - Run with `python crawler.py`
@@ -53,6 +50,7 @@ Advanced configuration
 You can add more options to the config.json if you need:
 
 - `"crawler_interval": 8`    // overriding default periodic callback timeout in seconds (10 by default, should be more than 7.2)
+- `"from_smtp_port": 25` // use non-standard smtp port (587 by default)
 - `"use_starttls": true` // forcing encrypted SMTP session using TLS (true by default)
 - `"use_ssl": false` // forcing encrypted SMTP session using SSL (false by default)
 - `"from_user": "sender@domain.com"`  // if smtp user is different from `from_email`
