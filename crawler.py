@@ -81,14 +81,14 @@ def run_crawler():
             e['zone'] for e in item['zones']
             if e['availability'] not in ['unavailable', 'unknown']])
         _logger.debug('%s is available in %s', server_type, available_zones)
-        # iterate over all locations and update availability states
-        for location, datacenters in REGIONS.items():
+        # iterate over all regions and update availability states
+        for region, datacenters in REGIONS.items():
             server_available = bool(available_zones.intersection(datacenters))
-            state_id = '%s_available_in_%s' % (server_type, location)
+            state_id = '%s_available_in_%s' % (server_type, region)
             message = {
                 'title': "{0} is available".format(server_type),
-                'text': "Server {server} is available in {loc}".format(
-                    server=server_type, loc=location),
+                'text': "Server {server} is available in {region}".format(
+                    server=server_type, region=region.capitalize()),
                 'url': "http://www.kimsufi.com/en/index.xml"
             }
             update_state(state_id, server_available, message)
@@ -120,9 +120,9 @@ if __name__ == "__main__":
         CONFIG['notifier'] = 'email'
 
     # prepare states tracked by the user
-    for track_server_type in CONFIG['servers']:
+    for server in CONFIG['servers']:
         TRACKED_STATES.append(
-            '%s_available_in_%s' % (track_server_type, CONFIG['region']))
+            '%s_available_in_%s' % (server, CONFIG['region'].lower()))
 
     # Check and set periodic callback time
     CALLBACK_TIME = CONFIG.get('crawler_interval', 10)
