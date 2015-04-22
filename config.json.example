@@ -1,6 +1,6 @@
 {
-    "servers": ["KS-3"],
-    "zones": ["rbx", "sbg"],
+    "servers": ["KS-1"],
+    "region": "europe",
     "notifier": "email",
     "from_email": "sender@domain.com",
     "from_pwd": "sender-password",
