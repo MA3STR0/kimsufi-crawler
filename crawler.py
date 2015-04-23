@@ -12,7 +12,11 @@ import tornado.web
 from tornado.httpclient import AsyncHTTPClient
 from tornado.httpclient import HTTPError
 from tornado.gen import coroutine
-from urllib import quote
+# Python 3 imports
+try:
+    from urllib import quote
+except ImportError:
+    from urllib.parse import quote
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 _logger = logging.getLogger(__name__)

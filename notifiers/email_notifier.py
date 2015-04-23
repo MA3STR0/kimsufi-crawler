@@ -1,5 +1,6 @@
 """Notifier that sends email messages through SMTP"""
 
+import sys
 import logging
 import smtplib
 from email.mime.text import MIMEText
@@ -18,8 +19,11 @@ class EmailNotifier(Notifier):
         self.use_ssl = config.get('use_ssl', False)
         self.fromaddr = config['from_email']
         # smtp user may be different from email
-        self.fromuser = config.get('from_user', self.fromaddr).encode('utf-8')
-        self.frompwd = config['from_pwd'].encode('utf-8')
+        self.fromuser = config.get('from_user', self.fromaddr)
+        self.frompwd = config['from_pwd']
+        if sys.version_info[0] == 2:
+            self.fromuser = self.fromuser.encode('utf-8')
+            self.frompwd = self.frompwd.encode('utf-8')
         self.host = config['from_smtp_host']
         self.port = config.get('from_smtp_port', 587)
         self.toaddr = config['to_email']

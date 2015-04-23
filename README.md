@@ -1,7 +1,7 @@
 Kimsufi/So-you-Start Avaliability Crawler
 ============================
 
-> Crawler that will notify as soon as OVH servers on Kimsufi/So-you-Start become available for purchase.
+> Crawler that will notify you when Kimsufi servers (or So-you-Start, or OVH) become available for purchase.
 
 **TL;DR**
 
@@ -17,10 +17,11 @@ About
 
 Dedicated servers on [Kimsufi](http://www.kimsufi.com) and [So you Start](http://www.soyoustart.com) have amazing prices, however they are always out of stock. This crawler will notify you as aoon as servers are available for purchase; it can send emails, show Mac OS notifications, open popup windows, or even trigger sms. Then hurry up, you have around 2 minutes to complete your order :)
 
+
 Set it up
 ---------
 
-_Following steps have been tested on Mac and Linux_
+**Runs on Linux and Mac with Python 2.7+ or Python 3.4+**
 
 - Clone this repo (`git clone https://github.com/MA3STR0/kimsufi-crawler.git`) or download and unpack archive
 - Taking `config.json.example` as a template, create a file `config.json` and correct configuration according to your preferences:
