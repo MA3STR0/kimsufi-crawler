@@ -50,13 +50,13 @@ class EmailNotifier(Notifier):
             raise
         _logger.info("SMTP server check passed")
 
-    def notify(self, title, text, url=False):
+    def notify(self, title, text, url=None):
         """Send email notification using SMTP"""
         msg = MIMEMultipart()
         msg['From'] = self.fromaddr
         msg['To'] = self.toaddr
         msg['Subject'] = title
-        body = text + '\nURL: ' + url
+        body = text if url else text + '\nURL: ' + url
         msg.attach(MIMEText(body, 'plain'))
         if self.use_ssl:
             server = smtplib.SMTP_SSL(self.host, self.port)
