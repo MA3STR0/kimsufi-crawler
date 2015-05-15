@@ -124,6 +124,7 @@ if __name__ == "__main__":
         'osx': 'notifiers.osx_notifier.OSXNotifier',
         'popup': 'notifiers.popup_notifier.PopupNotifier',
         'smsapi': 'notifiers.smsapi_notifier.SmsApiNotifier',
+        'xmpp': 'notifiers.xmpp_notifier.XMPPNotifier',
     }
     # Select notifier, 'email' by default
     if 'notifier' not in _CONFIG:
