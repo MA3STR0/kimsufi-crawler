@@ -34,10 +34,12 @@ Set it up
     - `"popup"`: simple popup window, platform-independent
     - `"osx"`: Mac OS-X desktop notifications (using terminal-notifier)
     - `"smsapi"`: sms through smsapi.pl gateway, requires account
+    - `"xmpp"`: send jabber/xmpp message, requires account - needs xmpppy
 
   - `to_email`: your email to receive notifications
   - `from_email`: email account of the crawler.
   - `from_pwd`, `from_smtp_host`: smtp configuration of crawler email account
+  - `xmpp_jid`, `xmpp_password`, `xmpp_recipient`, `xmpp_send_test`: xmpp configuration of sending jabber account
 
 - Crawler runs on Python 2.7+ and Tornado framework 4.0+. Assuming that you already have Python/pip, just get Tornado with `sudo pip install "tornado>=4.0.0"`. You can also set up virtualenv if you like.
 - Run with `python crawler.py`
