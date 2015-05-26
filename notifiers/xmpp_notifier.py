@@ -46,7 +46,7 @@ class XMPPNotifier(Notifier):
     def notify(self, title, text, url=False):
         """Send XMPP notification"""
         body = text + ' - ' + url
-        jid = xmpp.protocol.JID(self.self.xmpp_jid)
+        jid = xmpp.protocol.JID(self.xmpp_jid)
         cl = xmpp.Client(jid.getDomain(),debug=[])
         if not cl.connect():
             raise Exception("Connect failed.")
