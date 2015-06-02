@@ -77,12 +77,16 @@ class Crawler(object):
         http_client = AsyncHTTPClient()
         # request OVH availability API asynchronously
         try:
-            response = yield http_client.fetch(self.API_URL, request_timeout=30)
+            response = yield http_client.fetch(self.API_URL, request_timeout=REQUEST_TIMEOUT)
         except HTTPError as ex:
             # Internal Server Error
             self.HTTP_ERRORS.append(ex)
             if len(self.HTTP_ERRORS) > 3:
                 _logger.error("Too many HTTP Errors: %s", self.HTTP_ERRORS)
+            return
+        except Exception as gex:
+            # Also catch other errors.
+            _logger.error("Socket Error: %s", str(gex))
             return
         if self.HTTP_ERRORS:
             del self.HTTP_ERRORS[:]
@@ -154,6 +158,9 @@ if __name__ == "__main__":
         if state in TRACKED_STATES:
             _logger.info("Will notify: %s", state)
             NOTIFIER.notify(**message)
+
+    # Check and set request timeout
+    REQUEST_TIMEOUT = _CONFIG.get('request_timeout', 30)
 
     # Check and set periodic callback time
     CALLBACK_TIME = _CONFIG.get('crawler_interval', 30)
