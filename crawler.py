@@ -71,19 +71,22 @@ class Crawler(object):
         # save the new value
         self.STATES[state] = value
 
-
     @coroutine
     def run(self):
         """Run a crawler iteration"""
         http_client = AsyncHTTPClient()
         # request OVH availability API asynchronously
         try:
-            response = yield http_client.fetch(self.API_URL)
+            response = yield http_client.fetch(self.API_URL, request_timeout=REQUEST_TIMEOUT)
         except HTTPError as ex:
             # Internal Server Error
             self.HTTP_ERRORS.append(ex)
             if len(self.HTTP_ERRORS) > 3:
                 _logger.error("Too many HTTP Errors: %s", self.HTTP_ERRORS)
+            return
+        except Exception as gex:
+            # Also catch other errors.
+            _logger.error("Socket Error: %s", str(gex))
             return
         if self.HTTP_ERRORS:
             del self.HTTP_ERRORS[:]
@@ -113,6 +116,7 @@ class Crawler(object):
                     'url': "http://www.kimsufi.com/en/index.xml"
                 }
                 self.update_state(state_id, server_available, message)
+
 
 if __name__ == "__main__":
     # load user config
@@ -155,8 +159,11 @@ if __name__ == "__main__":
             _logger.info("Will notify: %s", state)
             NOTIFIER.notify(**message)
 
+    # Check and set request timeout
+    REQUEST_TIMEOUT = _CONFIG.get('request_timeout', 30)
+
     # Check and set periodic callback time
-    CALLBACK_TIME = _CONFIG.get('crawler_interval', 10)
+    CALLBACK_TIME = _CONFIG.get('crawler_interval', 30)
     if CALLBACK_TIME < 7.2:
         _logger.warning("Selected crawler interval of %s seconds is less than "
                         "7.2, client may be rate-limited by OVH", CALLBACK_TIME)
@@ -166,7 +173,7 @@ if __name__ == "__main__":
 
     # start the IOloop
     LOOP = tornado.ioloop.IOLoop.instance()
-    tornado.ioloop.PeriodicCallback(crawler.run, CALLBACK_TIME*1000).start()
+    tornado.ioloop.PeriodicCallback(crawler.run, CALLBACK_TIME * 1000).start()
     _logger.info("Starting IO loop")
     try:
         LOOP.start()
