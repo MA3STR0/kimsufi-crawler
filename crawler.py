@@ -115,6 +115,8 @@ class Crawler(object):
                         server=server_type, region=region.capitalize()),
                     'url': "http://www.kimsufi.com/en/index.xml"
                 }
+                if 'sys' in item['reference'] or 'bk' in item['reference']:
+                    message['url'] = 'http://www.soyoustart.com/de/essential-server/'
                 self.update_state(state_id, server_available, message)
 
 
