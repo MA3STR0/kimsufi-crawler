@@ -16,7 +16,10 @@ class XMPPNotifier(Notifier):
         """Override init to check settings"""
         self.xmpp_jid = config['xmpp_jid']
         self.xmpp_password = config['xmpp_password']
-        self.xmpp_recipient = config['xmpp_recipient']
+        if not isinstance(config['xmpp_recipient'], list):
+            self.xmpp_recipient = [ config['xmpp_recipient'] ]
+        else:
+            self.xmpp_recipient = config['xmpp_recipient']
         self.xmpp_send_test = config.get('xmpp_send_test', False)
         super(XMPPNotifier, self).__init__(config)
 
@@ -32,9 +35,10 @@ class XMPPNotifier(Notifier):
                 raise Exception("Authentication failed.")
 
             if self.xmpp_send_test:
-                if not cl.send(xmpp.protocol.Message(self.xmpp_recipient, 'Kimsufi Crawler: Initial Test Message')):
-                    raise Exception("Failed to send message to %s" % (self.xmpp_recipient, ))
-                _logger.info("XMPP sent: [%s] %s" % (self.xmpp_recipient, 'Kimsufi Crawler: Initial Test Message'))
+                for recipient in self.xmpp_recipient:
+                    if not cl.send(xmpp.protocol.Message(recipient, 'Kimsufi Crawler: Initial Test Message')):
+                        raise Exception("Failed to send message to %s" % (recipient, ))
+                    _logger.info("XMPP sent: [%s] %s" % (recipient, 'Kimsufi Crawler: Initial Test Message'))
 
         except Exception as ex:
             _logger.error("Cannot connect/auth to XMPP Server. "
@@ -54,6 +58,8 @@ class XMPPNotifier(Notifier):
         if not cl.auth(jid.getNode(), self.xmpp_password, resource=jid.getResource()):
             raise Exception("Authentication failed.")
 
-        if not cl.send(xmpp.protocol.Message(self.xmpp_recipient, body)):
-            raise Exception("Failed to send message to %s" % (self.xmpp_recipient, ))
-        _logger.info("XMPP sent: [%s] %s" % (self.xmpp_recipient, body))
+        for recipient in self.xmpp_recipient:
+            if not cl.send(xmpp.protocol.Message(recipient, body)):
+                _logger.error("Failed to send message to %s" % (recipient, ))
+            else:
+                _logger.info("XMPP sent: [%s] %s" % (recipient, body))
