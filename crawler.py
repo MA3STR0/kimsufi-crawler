@@ -126,6 +126,7 @@ if __name__ == "__main__":
 
     # init notifier
     _NOTIFIERS = {
+        'pushover' : 'notifiers.pushover_notifier.PushoverNotifier',
         'email': 'notifiers.email_notifier.EmailNotifier',
         'osx': 'notifiers.osx_notifier.OSXNotifier',
         'popup': 'notifiers.popup_notifier.PopupNotifier',
