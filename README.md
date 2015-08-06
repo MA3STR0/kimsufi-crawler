@@ -36,12 +36,14 @@ Set it up
     - `"smsapi"`: sms through smsapi.pl gateway, requires account
     - `"xmpp"`: send jabber/xmpp message, requires account - needs xmpppy
     - `"pushover"`: send Pushover message, requires account - needs chump
+    - `"pushbullet"`: send Pushbullet message, requires account - needs pushbullet
     
   - `to_email`: your email to receive notifications
   - `from_email`: email account of the crawler.
   - `from_pwd`, `from_smtp_host`: smtp configuration of crawler email account
   - `xmpp_jid`, `xmpp_password`, `xmpp_recipient`, `xmpp_send_test`: xmpp configuration of sending jabber account
   - `pushover_application_id`, `pushover_user_id`: your Pushover configuration, messages are sent to all devices assigned to user
+  - `pushbullet_apikey`: your Pushbullet API key, notification sent to all devices.
 
 - Crawler runs on Python 2.7+ and Tornado framework 4.0+. Assuming that you already have Python/pip, just get Tornado with `sudo pip install "tornado>=4.0.0"`. You can also set up virtualenv if you like.
 - Run with `python crawler.py`

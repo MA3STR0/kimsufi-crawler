@@ -132,6 +132,7 @@ if __name__ == "__main__":
         'popup': 'notifiers.popup_notifier.PopupNotifier',
         'smsapi': 'notifiers.smsapi_notifier.SmsApiNotifier',
         'xmpp': 'notifiers.xmpp_notifier.XMPPNotifier',
+        'pushbullet': 'notifiers.pushbullet_notifier.PushbulletNotifier',
     }
     # Select notifier, 'email' by default
     if 'notifier' not in _CONFIG:
