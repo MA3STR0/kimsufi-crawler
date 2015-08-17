@@ -3,13 +3,14 @@ Kimsufi/So-you-Start Avaliability Crawler
 
 > Crawler that will notify you when Kimsufi servers (or So-you-Start, or OVH) become available for purchase.
 
-**TL;DR**
+
 
     git clone https://github.com/MA3STR0/kimsufi-crawler.git
     cd kimsufi-crawler
     cp config.json.example config.json
     vim config.json   # edit config.json file to set up your nofitication preferences
     sudo pip install "tornado>=4.0.0"
+    sudo pip install "pushbullet.py"
     python crawler.py
 
 About
