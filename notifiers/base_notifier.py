@@ -16,6 +16,6 @@ class Notifier(object):
         """Abstract method to check requirements, config, dependencies etc"""
         raise NotImplementedError
 
-    def notify(self, title, text, url=False):
+    def notify(self, title, text, url=None):
         """Abstract method for notification sending"""
         raise NotImplementedError

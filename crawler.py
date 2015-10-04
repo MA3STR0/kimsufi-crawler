@@ -5,6 +5,7 @@ on Kimsufi/OVH become available for purchase"""
 
 import json
 import sys
+import os
 import logging
 import importlib
 import tornado.ioloop
@@ -12,127 +13,174 @@ import tornado.web
 from tornado.httpclient import AsyncHTTPClient
 from tornado.httpclient import HTTPError
 from tornado.gen import coroutine
+# Python 3 imports
+try:
+    from urllib import quote
+except ImportError:
+    from urllib.parse import quote
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 _logger = logging.getLogger(__name__)
-
-URL = "https://ws.ovh.com/dedicated/r2/ws.dispatcher/getAvailability2"
-
-NOTIFIERS = {
-    'email': 'notifiers.email_notifier.EmailNotifier',
-    'osx': 'notifiers.osx_notifier.OSXNotifier',
-    'popup': 'notifiers.popup_notifier.PopupNotifier',
-    'smsapi': 'notifiers.smsapi_notifier.SmsApiNotifier',
-}
-
-SERVER_TYPES = {
-    '150sk10': 'KS-1',
-    '150sk20': 'KS-2a',
-    '150sk21': 'KS-2b',
-    '150sk22': 'KS-2c',
-    '150sk30': 'KS-3',
-    '150sk31': 'KS-3',
-    '150sk40': 'KS-4',
-    '150sk41': 'KS-4',
-    '150sk42': 'KS-4',
-    '150sk50': 'KS-5',
-    '150sk60': 'KS-6',
-    '141game1': 'GAME-1',
-    '141game2': 'GAME-2',
-    '141game3': 'GAME-3',
-
-}
-
-DATACENTERS = {
-    'bhs': 'Beauharnois, Canada (Americas)',
-    'gra': 'Gravelines, France',
-    'rbx': 'Roubaix, France (Western Europe)',
-    'sbg': 'Strasbourg, France (Central Europe)',
-    'par': 'Paris, France',
-}
-
-STATES = {}
+CURRENT_PATH = os.path.dirname(__file__)
 
 
-def update_state(state, value, message=False):
-    """Update state of particular event"""
-    # if new value is True and last saved was False
-    if state not in STATES:
-        STATES[state] = False
-    if value is not STATES[state]:
-        _logger.info("State change - %s: %s", state, value)
-    if value and not STATES[state]:
-        notifier.notify(**message)
-    STATES[state] = value
+def parse_json_file(filename):
+    """open file and parse its content as json"""
+    with open(filename, 'r') as jsonfile:
+        content = jsonfile.read()
+        try:
+            result = json.loads(content)
+        except ValueError:
+            _logger.error(
+                "Parsing file %s failed. Check syntax with a JSON validator:"
+                "\nhttp://jsonlint.com/?json=%s", filename, quote(content))
+            sys.exit(1)
+    return result
 
 
-@coroutine
-def run_crawler():
-    """Run a crawler iteration"""
-    http_client = AsyncHTTPClient()
-    # request OVH availablility API asynchronously
-    try:
-        response = yield http_client.fetch(URL)
-    except HTTPError as e:
-        _logger.info("HTTP Error: {0}".format(e))
-        return
-    response_json = json.loads(response.body.decode('utf-8'))
-    if not response_json or not response_json['answer']:
-        return
-    availability = response_json['answer']['availability']
-    for item in availability:
-        # look for servers of required types in OVH availability list
-        if SERVER_TYPES.get(item['reference']) in config['servers']:
-            # make a flat list of zones where servers are available
-            available_zones = [e['zone'] for e in item['zones']
-                               if e['availability'] not in ['unavailable',
-                                                            'unknown']]
-            # iterate over all tacked zones and set availability states
-            for zone in config['zones']:
-                server = SERVER_TYPES[item['reference']]
-                state_id = '%s_available_in_%s' % (server, zone)
-                # update state for each tracked zone
-                text = "Server %s is available in %s" % (server, zone)
+class Crawler(object):
+    """Crawler responsible for fetching availability and monitoring states"""
+
+    def __init__(self, state_change_callback):
+        # set properties
+        self.state_change_callback = state_change_callback
+
+        # load mappings
+        self.SERVER_TYPES = parse_json_file(
+            os.path.join(CURRENT_PATH, 'mapping/server_types.json'))
+        self.REGIONS = parse_json_file(
+            os.path.join(CURRENT_PATH, 'mapping/regions.json'))
+
+        # set private vars
+        self.API_URL = ("https://ws.ovh.com/dedicated/r2/ws.dispatcher"
+                        "/getAvailability2")
+        self.STATES = {}
+        self.HTTP_ERRORS = []
+
+    def update_state(self, state, value, message=None):
+        """Update state of particular event"""
+        # if state is new, init it as False
+        if state not in self.STATES:
+            self.STATES[state] = False
+        # compare new value to old value
+        if value is not self.STATES[state]:
+            _logger.debug("State change - %s: %s", state, value)
+        # notify, if state changed from False to True
+        if value and not self.STATES[state]:
+            self.state_change_callback(state, message)
+        # save the new value
+        self.STATES[state] = value
+
+    @coroutine
+    def run(self):
+        """Run a crawler iteration"""
+        http_client = AsyncHTTPClient()
+        # request OVH availability API asynchronously
+        try:
+            response = yield http_client.fetch(self.API_URL, request_timeout=REQUEST_TIMEOUT)
+        except HTTPError as ex:
+            # Internal Server Error
+            self.HTTP_ERRORS.append(ex)
+            if len(self.HTTP_ERRORS) > 3:
+                _logger.error("Too many HTTP Errors: %s", self.HTTP_ERRORS)
+            return
+        except Exception as gex:
+            # Also catch other errors.
+            _logger.error("Socket Error: %s", str(gex))
+            return
+        if self.HTTP_ERRORS:
+            del self.HTTP_ERRORS[:]
+        response_json = json.loads(response.body.decode('utf-8'))
+        if not response_json or not response_json['answer']:
+            return
+        availability = response_json['answer']['availability']
+        for item in availability:
+            # get server type of availability item
+            server_type = self.SERVER_TYPES.get(item['reference'])
+            # return if this server type is not in mapping
+            if not server_type:
+                continue
+            # make a flat list of zones where servers of this type are available
+            available_zones = set([
+                e['zone'] for e in item['zones']
+                if e['availability'] not in ['unavailable', 'unknown']])
+            _logger.debug('%s is available in %s', server_type, available_zones)
+            # iterate over all regions and update availability states
+            for region, places in self.REGIONS.items():
+                server_available = bool(available_zones.intersection(places))
+                state_id = '%s_available_in_%s' % (server_type, region)
                 message = {
-                    'title': "Server %s available" % server,
-                    'text': text,
-                    'url': "http://www.kimsufi.com/fr/index.xml"
+                    'title': "{0} is available".format(server_type),
+                    'text': "Server {server} is available in {region}".format(
+                        server=server_type, region=region.capitalize()),
+                    'url': "http://www.kimsufi.com/en/index.xml"
                 }
-                update_state(state_id, zone in available_zones, message)
+                if 'sys' in item['reference'] or 'bk' in item['reference']:
+                    message['url'] = 'http://www.soyoustart.com/de/essential-server/'
+                self.update_state(state_id, server_available, message)
 
 
 if __name__ == "__main__":
-    CONFIG_NAME = sys.argv[1] if len(sys.argv) == 2 else 'config.json'
-    with open(CONFIG_NAME, 'r') as configfile:
-        try:
-            config = json.loads(configfile.read())
-        except ValueError:
-            _logger.error("Parsing JSON settings in config.json has failed. "
-                          "Check syntax with a validator (i.e. jsonlint.com)")
-            sys.exit(1)
+    # load user config
+    _CONFIG = parse_json_file(os.path.join(CURRENT_PATH, 'config.json'))
 
-
+    # init notifier
+    _NOTIFIERS = {
+        'pushover' : 'notifiers.pushover_notifier.PushoverNotifier',
+        'email': 'notifiers.email_notifier.EmailNotifier',
+        'osx': 'notifiers.osx_notifier.OSXNotifier',
+        'popup': 'notifiers.popup_notifier.PopupNotifier',
+        'smsapi': 'notifiers.smsapi_notifier.SmsApiNotifier',
+        'xmpp': 'notifiers.xmpp_notifier.XMPPNotifier',
+        'pushbullet': 'notifiers.pushbullet_notifier.PushbulletNotifier',
+    }
     # Select notifier, 'email' by default
-    if 'notifier' not in config:
+    if 'notifier' not in _CONFIG:
         _logger.warning("No notifier selected in config, 'email' will be used")
-        config['notifier'] = 'email'
+        _CONFIG['notifier'] = 'email'
     # Instantiate notifier class dynamically
     try:
-        n_path = NOTIFIERS[config['notifier']]
-        n_file, n_classname = n_path.rsplit('.', 1)
-        n_module = importlib.import_module(n_file)
-        notifier = getattr(n_module, n_classname)(config)
-    except:
-        _logger.exception("Notifier loading failed,"
-                          "check configuration for errors")
+        _NOTIFIER_PATH = _NOTIFIERS[_CONFIG['notifier']]
+        _NOTIFIER_FILE, _NOTIFIER_CLASSNAME = _NOTIFIER_PATH.rsplit('.', 1)
+        _NOTIFIER_MODULE = importlib.import_module(_NOTIFIER_FILE)
+        NOTIFIER = getattr(_NOTIFIER_MODULE, _NOTIFIER_CLASSNAME)(_CONFIG)
+    except Exception as ex:
+        _logger.exception("Notifier loading failed, check config for errors")
         sys.exit(1)
 
-    loop = tornado.ioloop.IOLoop.instance()
-    tornado.ioloop.PeriodicCallback(run_crawler, 30000).start()
-    _logger.info("Starting IO loop")
+    # prepare states tracked by the user
+    TRACKED_STATES = []
+    for server in _CONFIG['servers']:
+        TRACKED_STATES.append(
+            '%s_available_in_%s' % (server, _CONFIG['region'].lower()))
+    _logger.info('Tracking states: %s', TRACKED_STATES)
 
+    # define state-change callback to notify the user
+    def state_changed(state, message=None):
+        """Trigger notifications"""
+        message = message or {}
+        if state in TRACKED_STATES:
+            _logger.info("Will notify: %s", state)
+            NOTIFIER.notify(**message)
+
+    # Check and set request timeout
+    REQUEST_TIMEOUT = _CONFIG.get('request_timeout', 30)
+
+    # Check and set periodic callback time
+    CALLBACK_TIME = _CONFIG.get('crawler_interval', 30)
+    if CALLBACK_TIME < 7.2:
+        _logger.warning("Selected crawler interval of %s seconds is less than "
+                        "7.2, client may be rate-limited by OVH", CALLBACK_TIME)
+
+    # Init the crawler
+    crawler = Crawler(state_change_callback=state_changed)
+
+    # start the IOloop
+    LOOP = tornado.ioloop.IOLoop.instance()
+    tornado.ioloop.PeriodicCallback(crawler.run, CALLBACK_TIME * 1000).start()
+    _logger.info("Starting IO loop")
     try:
-        loop.start()
+        LOOP.start()
     except KeyboardInterrupt:
         _logger.info("Terminated by user. Bye.")
         sys.exit(0)

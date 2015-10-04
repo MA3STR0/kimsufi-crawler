@@ -1,12 +1,11 @@
 {
-    "servers": ["KS-3"],
-    "zones": ["rbx", "sbg"],
+    "servers": ["KS-1"],
+    "region": "europe",
     "notifier": "email",
-    "use_starttls": true,
     "from_email": "sender@domain.com",
-    "from_user": "sender@domain.com",
     "from_pwd": "sender-password",
     "from_smtp_host": "smtp.gmail.com",
-    "from_smtp_port": 587,
-    "to_email": "mymail@domain.com"
+    "to_email": "mymail@domain.com",
+    "crawler_interval": 30,
+    "request_timeout": 30
 }
