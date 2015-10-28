@@ -9,8 +9,7 @@ Kimsufi/So-you-Start Avaliability Crawler
     cd kimsufi-crawler
     cp config.json.example config.json
     vim config.json   # edit config.json file to set up your nofitication preferences
-    sudo pip install "tornado>=4.0.0"
-    sudo pip install "pushbullet.py"
+    sudo pip install -r requirements.txt
     python crawler.py
 
 About
@@ -38,7 +37,7 @@ Set it up
     - `"xmpp"`: send jabber/xmpp message, requires account - needs xmpppy
     - `"pushover"`: send Pushover message, requires account - needs chump
     - `"pushbullet"`: send Pushbullet message, requires account - needs pushbullet
-    
+
   - `to_email`: your email to receive notifications
   - `from_email`: email account of the crawler.
   - `from_pwd`, `from_smtp_host`: smtp configuration of crawler email account
@@ -46,7 +45,7 @@ Set it up
   - `pushover_application_id`, `pushover_user_id`: your Pushover configuration, messages are sent to all devices assigned to user
   - `pushbullet_apikey`: your Pushbullet API key, notification sent to all devices.
 
-- Crawler runs on Python 2.7+ and Tornado framework 4.0+. Assuming that you already have Python/pip, just get Tornado with `sudo pip install "tornado>=4.0.0"`. You can also set up virtualenv if you like.
+- Crawler runs on Python 2.7+ and Tornado framework 4.0+. Assuming that you already have Python/pip, just get Tornado and the notifier dependencies with `sudo pip install -r requirements.txt`. You can also set up virtualenv if you like.
 - Run with `python crawler.py`
 - It's a good idea to register an account on Kimsufi/OVH in advance; just pick any available server on www.kimsufi.com and sign up without paying. This way later you will only need to log in and enter payment details, which saves a lot of time.
 - Get and enjoy awesome cheap servers!
