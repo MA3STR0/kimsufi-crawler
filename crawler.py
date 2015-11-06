@@ -105,7 +105,8 @@ class Crawler(object):
             # iterate over all regions and update availability states
             for region, places in self.REGIONS.items():
                 server_available = bool(available_zones.intersection(places))
-                state_id = '%s_available_in_%s' % (server_type, region)
+                state_id = '%s_available_in_%s' % (server_type.lower(),
+                                                   region.lower())
                 message = {
                     'title': "{0} is available".format(server_type),
                     'text': "Server {server} is available in {region}".format(
@@ -143,7 +144,7 @@ if __name__ == "__main__":
     TRACKED_STATES = []
     for server in _CONFIG['servers']:
         TRACKED_STATES.append(
-            '%s_available_in_%s' % (server, _CONFIG['region'].lower()))
+            '%s_available_in_%s' % (server.lower(), _CONFIG['region'].lower()))
     _logger.info('Tracking states: %s', TRACKED_STATES)
 
     # define state-change callback to notify the user
@@ -155,7 +156,7 @@ if __name__ == "__main__":
             NOTIFIER.notify(**message)
 
     # Check and set periodic callback time
-    CALLBACK_TIME = _CONFIG.get('crawler_interval', 10)
+    CALLBACK_TIME = _CONFIG.get('crawler_interval', 7.5)
     if CALLBACK_TIME < 7.2:
         _logger.warning("Selected crawler interval of %s seconds is less than "
                         "7.2, client may be rate-limited by OVH", CALLBACK_TIME)
