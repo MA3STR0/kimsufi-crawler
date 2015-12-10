@@ -7,7 +7,7 @@ from notifiers.base_notifier import Notifier
 _logger = logging.getLogger(__name__)
 
 
-class PopupPywin32Notifier(Notifier):
+class PopupPywinNotifier(Notifier):
     """Notifier class for popup windows, a windows specific version"""
 
     def check_requirements(self):
@@ -25,8 +25,5 @@ class PopupPywin32Notifier(Notifier):
         # 0x00001000 -- Value represents MB_SYSTEMMODAL
         # This is to allow for the messagebox to sit over every window
         # Something that is not possible using easygui (as far as I'm aware)
-        if win32api.MessageBox(0,
-                               'Open Kimsufi order form?',
-                               'Kimsufi Crawler',
-                               0x00001000) == 1:
+        if win32api.MessageBox(0, text, title, 0x00001000) == 1:
             webbrowser.open_new_tab(url)

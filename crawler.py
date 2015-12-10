@@ -126,10 +126,11 @@ if __name__ == "__main__":
 
     # init notifier
     _NOTIFIERS = {
-        'pushover' : 'notifiers.pushover_notifier.PushoverNotifier',
+        'pushover': 'notifiers.pushover_notifier.PushoverNotifier',
         'email': 'notifiers.email_notifier.EmailNotifier',
         'osx': 'notifiers.osx_notifier.OSXNotifier',
         'popup': 'notifiers.popup_notifier.PopupNotifier',
+        'popup_pywin': 'notifiers.popup_pywin_notifier.PopupPywinNotifier',
         'smsapi': 'notifiers.smsapi_notifier.SmsApiNotifier',
         'xmpp': 'notifiers.xmpp_notifier.XMPPNotifier',
         'pushbullet': 'notifiers.pushbullet_notifier.PushbulletNotifier',
