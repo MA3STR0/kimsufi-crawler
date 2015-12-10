@@ -1,4 +1,4 @@
-"""Notifier that opens a popup window"""
+"""Notifier that opens a pywin popup window"""
 
 import logging
 import webbrowser
