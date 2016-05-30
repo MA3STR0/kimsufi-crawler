@@ -133,6 +133,7 @@ if __name__ == "__main__":
         'smsapi': 'notifiers.smsapi_notifier.SmsApiNotifier',
         'xmpp': 'notifiers.xmpp_notifier.XMPPNotifier',
         'pushbullet': 'notifiers.pushbullet_notifier.PushbulletNotifier',
+        'file': 'notifiers.file_notifier.FileNotifier',
     }
     # Select notifier, 'email' by default
     if 'notifier' not in _CONFIG:
