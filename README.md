@@ -21,7 +21,7 @@ Dedicated servers on [Kimsufi](http://www.kimsufi.com) and [So you Start](http:/
 Set it up
 ---------
 
-**Runs on Linux and Mac with Python 2.7+ or Python 3.4+**
+**Runs on Linux, Mac and Widnows with Python 2.7+ or Python 3.4+**
 
 - Clone this repo (`git clone https://github.com/MA3STR0/kimsufi-crawler.git`) or download and unpack archive
 - Taking `config.json.example` as a template, create a file `config.json` and correct configuration according to your preferences:
@@ -47,10 +47,10 @@ Set it up
   - `pushbullet_apikey`: your Pushbullet API key, notification sent to all devices.
 
 - Crawler runs on Python 2.7+ and Tornado framework 4.0+. Assuming that you already have Python/pip, just get Tornado and the notifier dependencies with `sudo pip install -r requirements.txt`. You can also set up virtualenv if you like.
-- If your pip install command does not complete due to xmpppy being on pre-release version (eg. 0.5.0rc1) use: `sudo pip install --pre -r requirements.txt`
-- Run with `python crawler.py`
-- It's a good idea to register an account on Kimsufi/OVH in advance; just pick any available server on www.kimsufi.com and sign up without paying. This way later you will only need to log in and enter payment details, which saves a lot of time.
-- Get and enjoy awesome cheap servers!
+- Run with `python crawler.py`. If no error messages come, you're ready.
+- (optional) If your pip install command fails due to xmpppy being on pre-release version (eg. 0.5.0rc1) use: `sudo pip install --pre -r requirements.txt`
+- (optional) In case of problems with easygui installation on Ubuntu, you can get it also with `sudo apt-get install python-easygui`
+- (optional) It's a good idea to register an account on Kimsufi/OVH in advance; just pick any available server on www.kimsufi.com and sign up without paying. This way later you will only need to log in and enter payment details, which saves a lot of time.
 
 **Config check**
 
