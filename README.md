@@ -32,6 +32,7 @@ Set it up
   - `notifier`: notification mechanism, choose between:
     - `"email"`: default, requires additional email account settings
     - `"popup"`: simple popup window, platform-independent
+    - `"popup_pywin"`: simple popup window, displays on top of all other windows (Windows only, requires pywin32 package)
     - `"osx"`: Mac OS-X desktop notifications (using terminal-notifier)
     - `"smsapi"`: sms through smsapi.pl gateway, requires account
     - `"xmpp"`: send jabber/xmpp message, requires account - needs xmpppy
@@ -46,6 +47,7 @@ Set it up
   - `pushbullet_apikey`: your Pushbullet API key, notification sent to all devices.
 
 - Crawler runs on Python 2.7+ and Tornado framework 4.0+. Assuming that you already have Python/pip, just get Tornado and the notifier dependencies with `sudo pip install -r requirements.txt`. You can also set up virtualenv if you like.
+- If your pip install command does not complete due to xmpppy being on pre-release version (eg. 0.5.0rc1) use: `sudo pip install --pre -r requirements.txt`
 - Run with `python crawler.py`
 - It's a good idea to register an account on Kimsufi/OVH in advance; just pick any available server on www.kimsufi.com and sign up without paying. This way later you will only need to log in and enter payment details, which saves a lot of time.
 - Get and enjoy awesome cheap servers!

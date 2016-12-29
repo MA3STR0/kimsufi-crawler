@@ -4,3 +4,4 @@ tornado>=4.0.0
 pushbullet.py>=0.8.0
 chump>=1.5.0
 xmpppy
+easygui
