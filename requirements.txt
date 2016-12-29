@@ -1,1 +1,6 @@
 tornado>=4.0.0
+
+# optional
+pushbullet.py>=0.8.0
+chump>=1.5.0
+xmpppy
