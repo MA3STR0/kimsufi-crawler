@@ -1,5 +1,5 @@
 {
-    "servers": ["KS-1"],
+    "servers": ["KS-3A", "KS-3B"],
     "region": "europe",
     "notifier": "email",
     "from_email": "sender@domain.com",

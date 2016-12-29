@@ -77,12 +77,19 @@ class Crawler(object):
         http_client = AsyncHTTPClient()
         # request OVH availability API asynchronously
         try:
-            response = yield http_client.fetch(self.API_URL, request_timeout=REQUEST_TIMEOUT)
+            response = yield http_client.fetch(self.API_URL,
+                                               request_timeout=REQUEST_TIMEOUT)
         except HTTPError as ex:
             # Internal Server Error
             self.HTTP_ERRORS.append(ex)
-            if len(self.HTTP_ERRORS) > 3:
-                _logger.error("Too many HTTP Errors: %s", self.HTTP_ERRORS)
+            if len(self.HTTP_ERRORS) > 5:
+                if all([e.code == 500 for e in self.HTTP_ERRORS]):
+                    _logger.error("Server continiously returns error 500 and "
+                                  "may be down, check the status manually: %s",
+                                  self.API_URL)
+                else:
+                    _logger.error("Too many HTTP Errors: %s", self.HTTP_ERRORS)
+                self.HTTP_ERRORS = []
             return
         except Exception as gex:
             # Also catch other errors.

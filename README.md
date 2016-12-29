@@ -52,9 +52,16 @@ Set it up
 - (optional) In case of problems with easygui installation on Ubuntu, you can get it also with `sudo apt-get install python-easygui`
 - (optional) It's a good idea to register an account on Kimsufi/OVH in advance; just pick any available server on www.kimsufi.com and sign up without paying. This way later you will only need to log in and enter payment details, which saves a lot of time.
 
+**Test everything**
+
+You may test the whole chain by setting some popular servers in your
+config.json, for example ["KS-3A", "KS-3B", "KS-2E"]. Since those are always
+available, you should receive a notification immediately.
+
 **Config check**
 
 Crawler makes an initial check of the config file during startup, so if you have any syntax errors or missing software dependencies - console logs will let you know.
+
 
 Advanced configuration
 ----------------------
