@@ -32,6 +32,7 @@ Set it up
   - `notifier`: notification mechanism, choose between:
     - `"email"`: default, requires additional email account settings
     - `"popup"`: simple popup window, platform-independent
+    - `"popup_pywin"`: simple popup window, displays on top of all other windows (Windows only, requires pywin32 package)
     - `"osx"`: Mac OS-X desktop notifications (using terminal-notifier)
     - `"smsapi"`: sms through smsapi.pl gateway, requires account
     - `"xmpp"`: send jabber/xmpp message, requires account - needs xmpppy
