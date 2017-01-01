@@ -37,6 +37,7 @@ Set it up
     - `"xmpp"`: send jabber/xmpp message, requires account - needs xmpppy
     - `"pushover"`: send Pushover message, requires account - needs chump
     - `"pushbullet"`: send Pushbullet message, requires account - needs pushbullet
+    - `"freemobile"`: sends sms to freemobile customer, requires account - needs requests
 
   - `to_email`: your email to receive notifications
   - `from_email`: email account of the crawler.
@@ -44,6 +45,8 @@ Set it up
   - `xmpp_jid`, `xmpp_password`, `xmpp_recipient`, `xmpp_send_test`: xmpp configuration of sending jabber account
   - `pushover_application_id`, `pushover_user_id`: your Pushover configuration, messages are sent to all devices assigned to user
   - `pushbullet_apikey`: your Pushbullet API key, notification sent to all devices.
+  - `freemobile_username`: your freemobile login
+  - `freemobile_key`: your freemobile sms notification key
 
 - Crawler runs on Python 2.7+ and Tornado framework 4.0+. Assuming that you already have Python/pip, just get Tornado and the notifier dependencies with `sudo pip install -r requirements.txt`. You can also set up virtualenv if you like.
 - If your pip install command does not complete due to xmpppy being on pre-release version (eg. 0.5.0rc1) use: `sudo pip install --pre -r requirements.txt`
