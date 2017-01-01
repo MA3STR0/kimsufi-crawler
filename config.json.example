@@ -6,6 +6,4 @@
     "from_pwd": "sender-password",
     "from_smtp_host": "smtp.gmail.com",
     "to_email": "mymail@domain.com",
-    "crawler_interval": 30,
-    "request_timeout": 30
 }

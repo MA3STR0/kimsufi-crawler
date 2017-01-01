@@ -68,12 +68,13 @@ Advanced configuration
 
 You can add more options to the config.json if you need:
 
-- `"crawler_interval": 8`    // overriding default periodic callback timeout in seconds (10 by default, should be more than 7.2)
-- `"from_smtp_port": 25` // use non-standard smtp port (587 by default)
+- `"crawler_interval": 8` // overriding default periodic callback interval in seconds (should be more than 7.2 to avoid rate-limit)
+- `"request_timeout": 30` // http timeout for API requests.
+- `"from_smtp_port": 587` // use non-standard smtp port
 - `"use_starttls": true` // forcing encrypted SMTP session using TLS (true by default)
 - `"use_ssl": false` // forcing encrypted SMTP session using SSL (false by default)
 - `"from_user": "sender@domain.com"`  // if smtp user is different from `from_email`
-- `"from_smtp_port": 587` // if you have non-standard (587) smtp port
+- `"from_smtp_port": 587` // if you have non-standard smtp port
 
 **Versions**
 

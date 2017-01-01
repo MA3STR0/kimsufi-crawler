@@ -6,6 +6,7 @@ on Kimsufi/OVH become available for purchase"""
 import json
 import sys
 import os
+import re
 import logging
 import importlib
 import tornado.ioloop
@@ -56,6 +57,10 @@ class Crawler(object):
                         "/getAvailability2")
         self.STATES = {}
         self.HTTP_ERRORS = []
+        self.interval = 8   # seconds between interations
+        self.periodic_cb = None
+        self.ioloop = None
+        self.http_client = AsyncHTTPClient()
 
     def update_state(self, state, value, message=None):
         """Update state of particular event"""
@@ -71,14 +76,18 @@ class Crawler(object):
         # save the new value
         self.STATES[state] = value
 
+    def resume_periodic_cb(self):
+        _logger.info("Crawler resumed")
+        self.periodic_cb.start()
+
     @coroutine
     def run(self):
         """Run a crawler iteration"""
-        http_client = AsyncHTTPClient()
-        # request OVH availability API asynchronously
+        progress()
         try:
-            response = yield http_client.fetch(self.API_URL,
-                                               request_timeout=REQUEST_TIMEOUT)
+            # request OVH availability API asynchronously
+            resp = yield self.http_client.fetch(self.API_URL,
+                                                request_timeout=REQUEST_TIMEOUT)
         except HTTPError as ex:
             # Internal Server Error
             self.HTTP_ERRORS.append(ex)
@@ -97,8 +106,21 @@ class Crawler(object):
             return
         if self.HTTP_ERRORS:
             del self.HTTP_ERRORS[:]
-        response_json = json.loads(response.body.decode('utf-8'))
+        response_json = json.loads(resp.body.decode('utf-8'))
+        if response_json.get('error'):
+            if response_json['error']['status'] == 451:
+                match = re.search(r'will be replenished in (\d+) seconds.',
+                                  response_json['error'].get('message', ''))
+                timeout = int(match.group(1)) if match else 28800
+                _logger.error("Rate-limit error, have to pause for %d seconds",
+                              timeout)
+                self.periodic_cb.stop()
+                self.ioloop.call_later(timeout, self.resume_periodic_cb)
+                self.interval *= 2
+                _logger.info("New request interval: %d seconds", self.interval)
+                return
         if not response_json or not response_json['answer']:
+            _logger.error("No answer from API: %s", response_json)
             return
         availability = response_json['answer']['availability']
         for item in availability:
@@ -126,6 +148,16 @@ class Crawler(object):
                 if 'sys' in item['reference'] or 'bk' in item['reference']:
                     message['url'] = 'http://www.soyoustart.com/de/essential-server/'
                 self.update_state(state_id, server_available, message)
+
+
+def bell():
+    sys.stdout.write('\a')
+    sys.stdout.flush()
+
+
+def progress():
+    sys.stdout.write('.')
+    sys.stdout.flush()
 
 
 if __name__ == "__main__":
@@ -172,25 +204,22 @@ if __name__ == "__main__":
         if state in TRACKED_STATES:
             _logger.info("Will notify: %s", state)
             NOTIFIER.notify(**message)
+            bell()
 
     # Check and set request timeout
     REQUEST_TIMEOUT = _CONFIG.get('request_timeout', 30)
 
-    # Check and set periodic callback time
-    CALLBACK_TIME = _CONFIG.get('crawler_interval', 30)
-    if CALLBACK_TIME < 7.2:
-        _logger.warning("Selected crawler interval of %s seconds is less than "
-                        "7.2, client may be rate-limited by OVH", CALLBACK_TIME)
-
     # Init the crawler
     crawler = Crawler(state_change_callback=state_changed)
+    crawler.periodic_cb = tornado.ioloop.PeriodicCallback(
+        crawler.run, crawler.interval * 1000)
+    crawler.periodic_cb.start()
 
     # start the IOloop
-    LOOP = tornado.ioloop.IOLoop.instance()
-    tornado.ioloop.PeriodicCallback(crawler.run, CALLBACK_TIME * 1000).start()
-    _logger.info("Starting IO loop")
+    _logger.info("Starting main loop")
+    crawler.ioloop = tornado.ioloop.IOLoop.instance()
     try:
-        LOOP.start()
+        crawler.ioloop.start()
     except KeyboardInterrupt:
         _logger.info("Terminated by user. Bye.")
         sys.exit(0)
