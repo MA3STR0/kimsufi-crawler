@@ -175,6 +175,7 @@ if __name__ == "__main__":
         'xmpp': 'notifiers.xmpp_notifier.XMPPNotifier',
         'pushbullet': 'notifiers.pushbullet_notifier.PushbulletNotifier',
         'file': 'notifiers.file_notifier.FileNotifier',
+        'freemobile': 'notifiers.freemobile_notifier.FreemobileNotifier',
     }
     # Select notifier, 'email' by default
     if 'notifier' not in _CONFIG:
