@@ -77,7 +77,6 @@ You can add more options to the config.json if you need:
 - `"use_starttls": true` // forcing encrypted SMTP session using TLS (true by default)
 - `"use_ssl": false` // forcing encrypted SMTP session using SSL (false by default)
 - `"from_user": "sender@domain.com"`  // if smtp user is different from `from_email`
-- `"from_smtp_port": 587` // if you have non-standard smtp port
 
 **Versions**
 
