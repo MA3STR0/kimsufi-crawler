@@ -12,8 +12,9 @@ class PushoverNotifier(Notifier):
 
     def __init__(self, config):
         """Override init to make Pushover-settings check"""
-        self.application_id = config.get('pushover_application_id', True)
-        self.user_id = config.get('pushover_user_id', True)
+        self.application_id = config.get('pushover_application_id')
+        self.user_id = config.get('pushover_user_id')
+        self.priority = config.get('pushover_priority', 0)
         super(PushoverNotifier, self).__init__(config)
 
     def check_requirements(self):
@@ -36,6 +37,5 @@ class PushoverNotifier(Notifier):
 
         message = user.send_message(message=text,
                                     title=title,
-                                    url=url)
-
-
+                                    url=url,
+                                    priority=self.priority)
