@@ -20,6 +20,7 @@ class TelegramNotifier(Notifier):
     def check_requirements(self):
         try:
             self.bot.get_me()
+            self.bot.send_message(chat_id=self.chat_id, text="Kimsufi Crawler started")
         except TelegramError as te:
             _logger.error("Telegram validation failed: {error}".format(error=te.message))
             raise
