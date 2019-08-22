@@ -45,7 +45,8 @@ Set it up
   - `from_pwd`, `from_smtp_host`: smtp configuration of crawler email account
   - `xmpp_jid`, `xmpp_password`, `xmpp_recipient`, `xmpp_send_test`: xmpp configuration of sending jabber account
   - `pushover_application_id`, `pushover_user_id`: your Pushover configuration, messages are sent to all devices assigned to user
-  - `pushbullet_apikey`: your Pushbullet API key, notification sent to all devices.
+  - `pushover_priority`: priority of the notification to receive. -2 is lowest and 2 is highest
+  - `pushbullet_apikey`: your Pushbullet API key, notification sent to all devices
   - `freemobile_username`: your freemobile login
   - `freemobile_key`: your freemobile sms notification key
 
