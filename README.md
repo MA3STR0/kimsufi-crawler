@@ -39,6 +39,7 @@ Set it up
     - `"pushover"`: send Pushover message, requires account - needs chump
     - `"pushbullet"`: send Pushbullet message, requires account - needs pushbullet
     - `"freemobile"`: sends sms to freemobile customer, requires account - needs requests
+    - `"telegram"`: sends message to a Telegram chat - needs python-telegram-bot
 
   - `to_email`: your email to receive notifications
   - `from_email`: email account of the crawler.
@@ -49,6 +50,8 @@ Set it up
   - `pushbullet_apikey`: your Pushbullet API key, notification sent to all devices
   - `freemobile_username`: your freemobile login
   - `freemobile_key`: your freemobile sms notification key
+  - `telegram_token`: full token you receive from BotFather after creating a bot
+  - `telegram_chat_id`: chat id you want to receive the message in. Retrieve by following for example [this stackoverflow answer](https://stackoverflow.com/a/32572159)
 
 - Crawler runs on Python 2.7+ and Tornado framework 4.0+. Assuming that you already have Python/pip, just get Tornado and the notifier dependencies with `sudo pip install -r requirements.txt`. You can also set up virtualenv if you like.
 - Run with `python crawler.py`. If no error messages come, you're ready.

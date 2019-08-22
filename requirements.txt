@@ -6,3 +6,4 @@ chump>=1.5.0
 xmpppy
 easygui
 requests
+python-telegram-bot
