@@ -21,7 +21,7 @@ Dedicated servers on [Kimsufi](http://www.kimsufi.com) and [So you Start](http:/
 Set it up
 ---------
 
-**Runs on Linux, Mac and Widnows with Python 2.7+ or Python 3.4+**
+**Runs on GNU/Linux, Mac and Widnows with Python 2.7+ or Python 3.4+**
 
 - Clone this repo (`git clone https://github.com/MA3STR0/kimsufi-crawler.git`) or download and unpack archive
 - Taking `config.json.example` as a template, create a file `config.json` and correct configuration according to your preferences:
