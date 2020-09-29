@@ -53,8 +53,7 @@ class Crawler(object):
             os.path.join(CURRENT_PATH, 'mapping/regions.json'))
 
         # set private vars
-        self.API_URL = ("https://ws.ovh.com/dedicated/r2/ws.dispatcher"
-                        "/getAvailability2")
+        self.API_URL = ("https://ca.ovh.com/engine/api/dedicated/server/availabilities?country=fra")
         self.STATES = {}
         self.HTTP_ERRORS = []
         self.interval = 8   # seconds between interations
@@ -107,34 +106,20 @@ class Crawler(object):
         if self.HTTP_ERRORS:
             del self.HTTP_ERRORS[:]
         response_json = json.loads(resp.body.decode('utf-8'))
-        if response_json.get('error'):
-            if response_json['error']['status'] == 451:
-                match = re.search(r'will be replenished in (\d+) seconds.',
-                                  response_json['error'].get('message', ''))
-                timeout = int(match.group(1)) if match else 28800
-                _logger.error("Rate-limit error, have to pause for %d seconds",
-                              timeout)
-                self.periodic_cb.stop()
-                self.ioloop.call_later(timeout, self.resume_periodic_cb)
-                self.interval *= 2
-                _logger.info("New request interval: %d seconds", self.interval)
-                return
-        if not response_json or not response_json['answer']:
+        # check for error
+        if not response_json:
             _logger.error("No answer from API: %s", response_json)
             return
-        availability = response_json['answer']['availability']
-        for item in availability:
-            # get server type of availability item
-            server_type = self.SERVER_TYPES.get(item['reference'])
-            # return if this server type is not in mapping
+        # parse
+        for entry in response_json:
+            server_type = self.SERVER_TYPES.get(entry['hardware'])
             if not server_type:
                 continue
-            # make a flat list of zones where servers of this type are available
             available_zones = set([
-                e['zone'] for e in item['zones']
+                e['datacenter'] for e in entry['datacenters']
                 if e['availability'] not in ['unavailable', 'unknown']])
             _logger.debug('%s is available in %s', server_type, available_zones)
-            # iterate over all regions and update availability states
+            
             for region, places in self.REGIONS.items():
                 server_available = bool(available_zones.intersection(places))
                 state_id = '%s_available_in_%s' % (server_type.lower(),
@@ -143,9 +128,9 @@ class Crawler(object):
                     'title': "{0} is available".format(server_type),
                     'text': "Server {server} is available in {region}".format(
                         server=server_type, region=region.capitalize()),
-                    'url': "http://www.kimsufi.com/en/index.xml"
+                    'url': "https://www.kimsufi.com/en/servers.xml"
                 }
-                if 'sys' in item['reference'] or 'bk' in item['reference']:
+                if 'sys' in entry['hardware'] or 'bk' in entry['hardware']:
                     message['url'] = 'http://www.soyoustart.com/de/essential-server/'
                 self.update_state(state_id, server_available, message)
 
